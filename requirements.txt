@@ -10,3 +10,4 @@ Flask-Cors
 pydantic
 python-dotenv
 gunicorn
+pydantic-settings
