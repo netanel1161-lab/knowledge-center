@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניהול מרכז ידע</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF',
+                        'lok-dark': '#1F2937',
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-8">
+        <header class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-black text-lok-dark">ניהול פריטי ידע</h1>
+                <p class="text-gray-500">חיפוש, סינון, יצירה ועריכה של תכני מרכז הידע.</p>
+            </div>
+            <form id="logout-form" class="hidden" method="POST" action="/logout"></form>
+            <button id="logout-btn" class="bg-gray-800 text-white px-4 py-2 rounded-md shadow hover:bg-gray-900">התנתק</button>
+        </header>
+
+        <section class="bg-white shadow rounded-xl p-6">
+            <div class="flex flex-col md:flex-row md:items-end md:space-x-4 md:space-x-reverse space-y-4 md:space-y-0">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700">חיפוש טקסט</label>
+                    <input id="search-input" type="text" class="mt-1 w-full border rounded-md p-2" placeholder="חיפוש בכותרת/תוכן">
+                </div>
+                <div class="w-full md:w-64">
+                    <label class="block text-sm font-medium text-gray-700">סוג פריט</label>
+                    <select id="filter-type" class="mt-1 w-full border rounded-md p-2">
+                        <option value="">הכל</option>
+                    </select>
+                </div>
+                <button id="refresh-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow">רענן</button>
+            </div>
+        </section>
+
+        <section class="bg-white shadow rounded-xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-lok-dark">פריטים</h2>
+                <div class="text-sm text-gray-500" id="pagination-info"></div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">כותרת</th>
+                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">סוג</th>
+                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">עדכון</th>
+                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">פעולות</th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-body" class="divide-y divide-gray-200 bg-white">
+                        <tr><td colspan="4" class="px-3 py-4 text-center text-gray-500">טוען...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-between items-center mt-4">
+                <button id="prev-page" class="px-3 py-2 bg-gray-200 rounded disabled:opacity-50">הקודם</button>
+                <button id="next-page" class="px-3 py-2 bg-gray-200 rounded disabled:opacity-50">הבא</button>
+            </div>
+        </section>
+
+        <section class="bg-white shadow rounded-xl p-6">
+            <h2 class="text-xl font-bold text-lok-dark mb-4" id="form-title">יצירת פריט חדש</h2>
+            <form id="item-form" class="space-y-4">
+                <input type="hidden" id="item-id">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">סוג פריט</label>
+                    <select id="form-item-type" required class="mt-1 w-full border rounded-md p-2"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">כותרת</label>
+                    <input id="form-title-input" required class="mt-1 w-full border rounded-md p-2" />
+                </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">תוכן (HTML מותר)</label>
+                        <textarea id="form-content" rows="6" class="mt-1 w-full border rounded-md p-2"></textarea>
+                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Metadata (JSON)</label>
+                    <textarea id="form-metadata" rows="4" class="mt-1 w-full border rounded-md p-2" placeholder='{"tags": ["policy"], "owner": "dana"}'></textarea>
+                    <p class="text-xs text-gray-500 mt-1">ודא שמדובר ב-JSON תקין.</p>
+                </div>
+                <div class="flex space-x-2 space-x-reverse">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow">שמור</button>
+                    <button type="button" id="reset-form" class="bg-gray-200 px-4 py-2 rounded-md">נקה</button>
+                </div>
+                <div id="form-message" class="text-sm mt-2"></div>
+            </form>
+        </section>
+    </div>
+
+    <script>
+        const itemTypes = ["strategy","finance","hr","ops","infra","archive","document","template","policy","marketing_asset","supplier","timeline_item"];
+        const filterType = document.getElementById('filter-type');
+        const formItemType = document.getElementById('form-item-type');
+        const searchInput = document.getElementById('search-input');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const itemsBody = document.getElementById('items-body');
+        const paginationInfo = document.getElementById('pagination-info');
+        const prevPageBtn = document.getElementById('prev-page');
+        const nextPageBtn = document.getElementById('next-page');
+        const form = document.getElementById('item-form');
+        const formMessage = document.getElementById('form-message');
+        const resetBtn = document.getElementById('reset-form');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        let currentPage = 1;
+        let total = 0;
+        let pageSize = 10;
+
+        function populateItemTypes() {
+            itemTypes.forEach(t => {
+                const opt1 = document.createElement('option');
+                opt1.value = t; opt1.textContent = t;
+                formItemType.appendChild(opt1);
+                const opt2 = document.createElement('option');
+                opt2.value = t; opt2.textContent = t;
+                filterType.appendChild(opt2);
+            });
+        }
+
+        function showMessage(el, text, isError=false) {
+            el.textContent = text;
+            el.className = isError ? "text-red-600" : "text-green-600";
+        }
+
+        async function fetchItems() {
+            const params = new URLSearchParams();
+            params.append("page", currentPage);
+            params.append("page_size", pageSize);
+            if (filterType.value) params.append("item_type", filterType.value);
+            if (searchInput.value) params.append("q", searchInput.value.trim());
+            itemsBody.innerHTML = `<tr><td colspan="4" class="px-3 py-4 text-center text-gray-500">טוען...</td></tr>`;
+            try {
+                const res = await fetch(`/api/knowledge_items?${params.toString()}`, {credentials: "include"});
+                if (!res.ok) throw new Error("שגיאה בטעינת נתונים");
+                const data = await res.json();
+                total = data.total;
+                renderItems(data.items || []);
+                renderPagination(data.page, data.page_size, data.total);
+            } catch (err) {
+                itemsBody.innerHTML = `<tr><td colspan="4" class="px-3 py-4 text-center text-red-600">${err.message}</td></tr>`;
+            }
+        }
+
+        function renderItems(items) {
+            if (!items.length) {
+                itemsBody.innerHTML = `<tr><td colspan="4" class="px-3 py-4 text-center text-gray-500">אין נתונים</td></tr>`;
+                return;
+            }
+            itemsBody.innerHTML = "";
+            items.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-3 py-2 text-sm font-semibold text-gray-800">${item.title}</td>
+                    <td class="px-3 py-2 text-sm text-gray-500">${item.item_type}</td>
+                    <td class="px-3 py-2 text-xs text-gray-400">${item.updated_at ? new Date(item.updated_at).toLocaleString('he-IL') : '-'}</td>
+                    <td class="px-3 py-2 text-sm flex space-x-2 space-x-reverse">
+                        <button class="text-blue-600 hover:underline" data-action="edit" data-id="${item.id}">עריכה</button>
+                        <button class="text-red-600 hover:underline" data-action="delete" data-id="${item.id}">מחיקה</button>
+                    </td>
+                `;
+                tr.querySelector('[data-action="edit"]').addEventListener('click', () => loadItemToForm(item.id));
+                tr.querySelector('[data-action="delete"]').addEventListener('click', () => deleteItem(item.id));
+                itemsBody.appendChild(tr);
+            });
+        }
+
+        function renderPagination(page, size, totalItems) {
+            paginationInfo.textContent = `עמוד ${page} | סה״כ ${totalItems}`;
+            prevPageBtn.disabled = page <= 1;
+            nextPageBtn.disabled = (page * size) >= totalItems;
+        }
+
+        async function loadItemToForm(id) {
+            try {
+                const res = await fetch(`/api/knowledge_items/${id}`, {credentials: "include"});
+                if (!res.ok) throw new Error("שגיאה בטעינה");
+                const item = await res.json();
+                document.getElementById('item-id').value = item.id;
+                formItemType.value = item.item_type;
+                document.getElementById('form-title-input').value = item.title;
+                document.getElementById('form-content').value = item.content || "";
+                document.getElementById('form-metadata').value = JSON.stringify(item.metadata || {}, null, 2);
+                document.getElementById('form-title').textContent = "עריכת פריט";
+                showMessage(formMessage, "נטען לעדכון", false);
+            } catch (err) {
+                showMessage(formMessage, err.message, true);
+            }
+        }
+
+        async function deleteItem(id) {
+            if (!confirm("למחוק פריט?")) return;
+            const res = await fetch(`/api/knowledge_items/${id}`, {method: "DELETE", credentials: "include"});
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || "שגיאה במחיקה");
+                return;
+            }
+            await fetchItems();
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            formMessage.textContent = "";
+            let metadata = document.getElementById('form-metadata').value.trim();
+            if (!metadata) metadata = "{}";
+            try {
+                metadata = JSON.parse(metadata);
+            } catch (err) {
+                showMessage(formMessage, "Metadata אינו JSON תקין", true);
+                return;
+            }
+            const payload = {
+                item_type: formItemType.value,
+                title: document.getElementById('form-title-input').value,
+                content: document.getElementById('form-content').value,
+                metadata,
+            };
+            const id = document.getElementById('item-id').value;
+            const method = id ? "PUT" : "POST";
+            const url = id ? `/api/knowledge_items/${id}` : "/api/knowledge_items";
+            const res = await fetch(url, {
+                method,
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify(payload),
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                showMessage(formMessage, err.error || "שגיאה בשמירה", true);
+                return;
+            }
+            showMessage(formMessage, "נשמר בהצלחה");
+            form.reset();
+            document.getElementById('item-id').value = "";
+            document.getElementById('form-title').textContent = "יצירת פריט חדש";
+            await fetchItems();
+        });
+
+        resetBtn.addEventListener('click', () => {
+            form.reset();
+            document.getElementById('item-id').value = "";
+            document.getElementById('form-title').textContent = "יצירת פריט חדש";
+            formMessage.textContent = "";
+        });
+
+        refreshBtn.addEventListener('click', () => { currentPage = 1; fetchItems(); });
+        filterType.addEventListener('change', () => { currentPage = 1; fetchItems(); });
+        searchInput.addEventListener('keyup', (e) => { if (e.key === "Enter") { currentPage = 1; fetchItems(); } });
+        prevPageBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; fetchItems(); } });
+        nextPageBtn.addEventListener('click', () => { currentPage++; fetchItems(); });
+
+        logoutBtn.addEventListener('click', async () => {
+            await fetch("/logout", {method: "POST", credentials: "include"});
+            window.location.href = "/login";
+        });
+
+        populateItemTypes();
+        fetchItems();
+    </script>
+</body>
+</html>

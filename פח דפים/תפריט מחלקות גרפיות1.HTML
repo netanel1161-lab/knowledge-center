@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOK - מרכז המידע | מחלקות גרפיות</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Heebo Font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF', // כחול המותג הראשי
+                        'lok-dark-gray': '#393939', // טקסט ראשי
+                        'lok-neutral': '#F0F0F0', // רקע נייטרלי
+                        'lok-success': '#28A745', 
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FFFFFF;
+            font-family: 'Heebo', sans-serif;
+            color: #393939;
+            min-height: 100vh;
+        }
+
+        /* Styling for the decorative top wave/pattern SVG */
+        .top-wave-container {
+            background-color: #007AFF; 
+            padding-bottom: 3rem; /* Space for the wave to dip */
+            position: relative;
+            z-index: 1;
+        }
+
+        .top-wave-svg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+            transform: rotate(180deg); /* Flip to be a bottom edge */
+        }
+
+        .top-wave-svg svg {
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 100px; /* Set height for visibility */
+        }
+
+        .top-wave-svg .shape-fill {
+            fill: #FFFFFF; /* Wave color should be white, matching the background */
+        }
+
+        /* Animation for card hover effect */
+        .department-card {
+            transition: all 0.3s ease-out;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .department-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.2); /* Soft blue shadow */
+            border-color: #007AFF;
+        }
+        
+        /* Fixed header style */
+        .fixed-header {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(5px);
+            background-color: rgba(255, 255, 255, 0.95);
+            z-index: 50;
+        }
+        
+        /* Placeholder styling for icons */
+        .icon-placeholder {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            background-color: rgba(0, 122, 255, 0.1); /* Light blue circle */
+            color: #007AFF;
+            font-size: 24px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Fixed Top Header (Footer of the Info Center) -->
+    <header class="fixed-header sticky top-0 w-full border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            
+            <!-- Logo/Center Title -->
+            <a href="#" class="flex items-center space-x-2 space-x-reverse text-xl font-black text-lok-dark-gray hover:text-lok-primary transition-colors">
+                 <!-- Simple logo text fallback -->
+                <span class="text-lok-primary text-2xl">LOK</span>
+                <span>מרכז המידע</span>
+            </a>
+
+            <!-- Search Bar (Design Only) -->
+            <div class="flex-grow max-w-lg mx-8 hidden md:block">
+                <div class="relative">
+                    <input type="text" placeholder="חפש במחלקות, חומרים ותבניות..." class="w-full py-2 pr-10 pl-4 border border-gray-200 rounded-full focus:ring-2 focus:ring-lok-primary focus:border-lok-primary text-sm transition-shadow shadow-inner">
+                    <!-- Search Icon (Magnifying Glass) -->
+                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Menu Button (Design Only) -->
+            <button class="p-2 rounded-full text-lok-dark-gray hover:text-lok-primary hover:bg-lok-neutral transition-colors">
+                 <!-- Menu Icon (Hamburger) -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+        </div>
+    </header>
+    
+    <!-- 2. Hero Section with Decorative SVG/PNG and Main Title -->
+    <div class="top-wave-container pt-16 pb-20 md:pt-24 md:pb-32 text-center">
+        
+        <!-- Decorative Icon/Image (Placeholder for PNG/SVG design) -->
+        <div class="mb-4 mx-auto w-24 h-24 icon-placeholder bg-white border-4 border-lok-primary shadow-2xl" style="background-color: #FFFFFF; color: #007AFF;">
+             <!-- Pencil and Ruler Icon (Lucide/SVG) -->
+             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-1.5"/><path d="M9 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7v1"/><path d="M12 10l3 3"/></svg>
+        </div>
+        
+        <h1 class="text-5xl md:text-6xl font-black text-white mb-2 leading-snug">מחלקות גרפיות</h1>
+        <p class="text-gray-200 text-lg md:text-xl">בחר את המחלקה הרצויה למעבר לחומרים, נכסים ודרישות טכניות.</p>
+
+        <!-- Wave SVG element to transition to white background -->
+        <div class="top-wave-svg">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M985.66,92.83C906.67,72,823.7,53.64,756.51,20.69C672.01-13.73,590.87,7.21,507.59,49.27C418.26,93.68,324.77,100.83,235.84,94.62C103.79,84.58,0,51.49,0,0V120H1200V0A597.29,597.29,0,0,0,985.66,92.83Z" class="shape-fill"></path>
+            </svg>
+        </div>
+    </div>
+
+    <!-- 3. Main Departments Grid -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+
+            <!-- Department 1: Lottie/Animations -->
+            <a href="#lottie-animations" class="department-card bg-white p-8 rounded-2xl border-2 border-transparent hover:border-lok-primary/50 block">
+                <div class="icon-placeholder text-lok-success bg-lok-success/10 mb-4">
+                    <!-- Animation Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.3 12 11 20.73 6.3"/><path d="M12 22V11"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-lok-dark-gray mb-2">לוטי ואנימציות</h2>
+                <p class="text-gray-600 text-base">הנחיות לייצוא קבצי Lottie, דרישות תנועה ומיקום קבצי המקור.</p>
+                <span class="text-sm text-lok-primary font-bold mt-3 block">מעבר לעמוד »</span>
+            </a>
+
+            <!-- Department 2: Sound Effects -->
+            <a href="#sound-effects" class="department-card bg-white p-8 rounded-2xl border-2 border-transparent hover:border-lok-primary/50 block">
+                <div class="icon-placeholder text-red-500 bg-red-500/10 mb-4">
+                    <!-- Speaker Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a4.99 4.99 0 0 1 0 7.07"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-lok-dark-gray mb-2">סאונד אפקטס</h2>
+                <p class="text-gray-600 text-base">ספריית הסאונד המלאה, חוקי שימוש ודרישות פורמט להטמעה בפלטפורמות.</p>
+                <span class="text-sm text-lok-primary font-bold mt-3 block">מעבר לעמוד »</span>
+            </a>
+
+            <!-- Department 3: Icons -->
+            <a href="#icons" class="department-card bg-white p-8 rounded-2xl border-2 border-transparent hover:border-lok-primary/50 block">
+                <div class="icon-placeholder text-indigo-500 bg-indigo-500/10 mb-4">
+                    <!-- Icon Grid Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-lok-dark-gray mb-2">אייקונים</h2>
+                <p class="text-gray-600 text-base">פונט האייקונים, הנחיות שימוש ב-SVG וכללי הגודל, הקו והצבע.</p>
+                <span class="text-sm text-lok-primary font-bold mt-3 block">מעבר לעמוד »</span>
+            </a>
+            
+            <!-- Department 4: Illustrations -->
+            <a href="#illustrations" class="department-card bg-white p-8 rounded-2xl border-2 border-transparent hover:border-lok-primary/50 block">
+                <div class="icon-placeholder text-yellow-500 bg-yellow-500/10 mb-4">
+                    <!-- Brush/Palette Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 15.5l-2.5-2.5 5-5L21 8.5l-5 5-3 3z"/><circle cx="7" cy="7" r="2"/><path d="M10 5l-2 2"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-lok-dark-gray mb-2">אילוסטרציות</h2>
+                <p class="text-gray-600 text-base">סגנון ציור רשמי, קומפוזיציות מותרות, וספריית הדמויות המאושרות.</p>
+                <span class="text-sm text-lok-primary font-bold mt-3 block">מעבר לעמוד »</span>
+            </a>
+
+            <!-- Department 5: Mockups -->
+            <a href="#mockups" class="department-card bg-white p-8 rounded-2xl border-2 border-transparent hover:border-lok-primary/50 block">
+                <div class="icon-placeholder text-green-500 bg-green-500/10 mb-4">
+                    <!-- Monitor/Device Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2" ry="2"/><line x1="12" y1="20" x2="12" y2="16"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-lok-dark-gray mb-2">מוקאפים</h2>
+                <p class="text-gray-600 text-base">דגמי המכשירים הרשמיים, סצנות מותרות וקישורים לקבצי המקור.</p>
+                <span class="text-sm text-lok-primary font-bold mt-3 block">מעבר לעמוד »</span>
+            </a>
+
+            <!-- Department 6: Design Templates -->
+            <a href="#templates" class="department-card bg-white p-8 rounded-2xl border-2 border-transparent hover:border-lok-primary/50 block">
+                <div class="icon-placeholder text-purple-500 bg-purple-500/10 mb-4">
+                    <!-- Template Icon (Layout) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><rect x="7" y="7" width="10" height="4"/><line x1="7" y1="15" x2="17" y2="15"/><line x1="7" y1="18" x2="17" y2="18"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-lok-dark-gray mb-2">תבניות עיצוב</h2>
+                <p class="text-gray-600 text-base">גישה לתבניות Figma, פוטושופ ואינדיזיין למגוון שימושים מותגיים.</p>
+                <span class="text-sm text-lok-primary font-bold mt-3 block">מעבר לעמוד »</span>
+            </a>
+            
+            <!-- Department 7: Graphic Definitions and Requirements (Full Width) -->
+            <a href="#requirements" class="department-card bg-white p-8 rounded-2xl border-2 border-transparent hover:border-lok-primary/50 block lg:col-span-3">
+                <div class="flex items-center space-x-6 space-x-reverse">
+                    <div class="icon-placeholder text-lok-primary bg-lok-primary/10 flex-shrink-0">
+                         <!-- Settings/Checklist Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-10 10-10 10 10 10 10-3 10-10 10S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-lok-dark-gray mb-1">הגדרות ודרישות גרפיות (Brand Guide)</h2>
+                        <p class="text-gray-600 text-base">המדריך המלא של צבעים, פונטים, לוגו, ושפת המותג העיצובית (הדף הקודם).</p>
+                        <span class="text-sm text-lok-primary font-bold mt-3 block">מעבר לעמוד »</span>
+                    </div>
+                </div>
+            </a>
+            
+        </div>
+    </main>
+
+    <!-- 4. Cute Bottom Graphic (Fun Element) -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+        <!-- Fun, clean, cute SVG character/graphic -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#28A745" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto transform hover:rotate-3 transition-transform duration-300">
+            <!-- Simple clean geometric smiley face -->
+            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-5 7h.01M17 9h.01M10 15h4"/>
+            <path d="M8 13s1.5 2 4 2 4-2 4-2"/>
+        </svg>
+        <p class="mt-4 text-gray-500 text-sm">אנחנו כאן כדי לעזור לך ליצור תוכן מושלם! 😊</p>
+    </div>
+    
+    <!-- JavaScript for basic functionality/future use - keeping it clean for now -->
+    <script>
+        // Placeholder JavaScript for future routing/search functionality
+        console.log("דף מחלקות גרפיות נטען. הקישורים כרגע הם placeholders (#).");
+        
+        // Example for how to implement a future routing/copy logic
+        function navigateTo(url) {
+            // In a real app, this would use a router (React/Angular) or window.location.href
+            console.log(`נווט לדף: ${url}`);
+            // window.location.href = url;
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo(e.currentTarget.getAttribute('href'));
+            });
+        });
+
+    </script>
+</body>
+</html>

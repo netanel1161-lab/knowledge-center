@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>l00K | שיווק ופרסום</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF', 
+                        'lok-dark-gray': '#1F2937', 
+                        'lok-soft-gray': '#F9FAFB', 
+                        'lok-blue-light': '#EBF5FF',
+                        'lok-accent': '#10B981', 
+                        'lok-marketing': '#F59E0B', // New color for marketing
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            color: #1F2937;
+            min-height: 100vh;
+            background-color: #F9FAFB;
+        }
+        .fixed-header {
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05); 
+            background-color: #FFFFFF;
+            z-index: 50;
+        }
+        .document-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .document-link:hover {
+            background-color: #F3F4F6;
+            transform: translateX(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="fixed-header sticky top-0 w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center relative z-10">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                 <img src="https://placehold.co/40x40/007AFF/FFFFFF?text=L" alt="לוגו l00K" class="rounded-full">
+                <a href="תפריט ראשי2.HTML" class="text-3xl font-black text-lok-dark-gray">
+                    <span class="text-lok-primary">l00K</span>
+                    <span class="text-xl font-light"> | שיווק ופרסום</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16 relative z-10">
+
+        <!-- Back Button -->
+        <div class="my-6">
+            <a href="מאגר מסמכים.HTML" class="inline-flex items-center text-lok-primary font-bold hover:underline">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 transform rotate-180"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                חזרה למאגר המסמכים
+            </a>
+        </div>
+
+        <div class="p-6 sm:p-12 rounded-2xl border-b border-gray-200 mb-12 bg-white shadow-sm">
+            <h1 class="text-4xl lg:text-5xl font-extrabold text-lok-dark-gray leading-tight mb-3">
+                <span class="text-lok-marketing">שיווק ופרסום</span>
+            </h1>
+            <p class="text-gray-600 text-lg max-w-xl">
+                חומרים, נהלים ודוחות הקשורים לפעילות השיווק והפרסום של החברה.
+            </p>
+        </div>
+
+        <div id="document-sections">
+            <!-- Instagram -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-lok-dark-gray mb-4 border-r-4 border-lok-marketing pr-3">אינסטגרם</h2>
+                <div class="space-y-3">
+                    <a href="documents/sample.pdf" target="_blank" class="document-link flex items-center p-3 border rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500 ml-3"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6l4 4v2"/><path d="M10 12h3"/><path d="M10 16h6"/><path d="M21 15a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/></svg>
+                        <span class="font-medium">מדריך לפרסום סטוריז - Q4 2025</span>
+                    </a>
+                    <!-- Add more documents here -->
+                </div>
+            </div>
+
+            <!-- Facebook -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-lok-dark-gray mb-4 border-r-4 border-lok-marketing pr-3">פייסבוק</h2>
+                <div class="space-y-3">
+                     <p class="text-gray-500">אין מסמכים בקטגוריה זו.</p>
+                </div>
+            </div>
+
+            <!-- TikTok -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-lok-dark-gray mb-4 border-r-4 border-lok-marketing pr-3">טיקטוק</h2>
+                <div class="space-y-3">
+                     <p class="text-gray-500">אין מסמכים בקטגוריה זו.</p>
+                </div>
+            </div>
+
+            <!-- Radio -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-lok-dark-gray mb-4 border-r-4 border-lok-marketing pr-3">רדיו</h2>
+                <div class="space-y-3">
+                     <p class="text-gray-500">אין מסמכים בקטגוריה זו.</p>
+                </div>
+            </div>
+
+            <!-- Other Media -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-lok-dark-gray mb-4 border-r-4 border-lok-marketing pr-3">מדיות נוספות</h2>
+                <div class="space-y-3">
+                     <p class="text-gray-500">אין מסמכים בקטגוריה זו.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="text-center py-6 relative z-10 border-t border-gray-200 mt-16 bg-white">
+        <p class="mt-4 text-gray-500 text-sm">מערכת l00K. כל הזכויות שמורות. </p>
+    </footer>
+    
+</body>
+</html>

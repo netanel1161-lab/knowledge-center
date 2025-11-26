@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>l00K | תפריט פיננסי</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF', 
+                        'lok-dark-gray': '#1F2937', 
+                        'lok-soft-gray': '#F9FAFB', 
+                        'lok-blue-light': '#EBF5FF',
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* הגדרת משתני CSS נוחים לשימוש ברקע */
+        :root {
+            --lok-primary: #007AFF;
+            --lok-blue-light: #EBF5FF;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            color: #1F2937;
+            min-height: 100vh;
+            background-color: #F9FAFB;
+            position: relative; 
+            overflow-x: hidden; 
+            display: flex; /* כדי למרכז את התוכן */
+            flex-direction: column;
+        }
+        
+        /* ------------------------------------- */
+        /* עיצוב הרקע הגיאומטרי (עיגולים מטושטשים) - כמו בדפים הקודמים */
+        /* ------------------------------------- */
+
+        /* עיגול גדול עליון-שמאלי בהיר */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -100px; 
+            right: 80%; 
+            width: 700px; 
+            height: 700px; 
+            border-radius: 50%;
+            background-color: var(--lok-blue-light);
+            opacity: 0.6; 
+            z-index: -1; 
+            filter: blur(120px); 
+        }
+
+        /* עיגול גדול תחתון-ימני כהה יותר */
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -200px; 
+            left: 70%; 
+            width: 800px; 
+            height: 800px; 
+            border-radius: 50%;
+            background-color: var(--lok-primary); 
+            opacity: 0.05; 
+            z-index: -1; 
+            filter: blur(150px); 
+        }
+
+        /* ------------------------------------- */
+        /* סגנון כפתור ראשי */
+        /* ------------------------------------- */
+
+        .financial-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 180px; /* גובה קבוע לכרטיס */
+            padding: 1.5rem;
+            border-radius: 1.5rem; /* פינות עגולות יותר */
+            background-color: white;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08); /* צל עדין */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .financial-button:hover {
+            transform: translateY(-5px); /* אפקט הרמה קל */
+            box-shadow: 0 12px 24px rgba(0, 122, 255, 0.2); /* צל כחול בולט יותר */
+            border-color: var(--lok-primary);
+        }
+
+        .financial-button svg {
+            color: var(--lok-primary);
+            margin-bottom: 0.75rem;
+            transition: color 0.3s ease;
+        }
+        
+        .financial-button:hover svg {
+             color: #0056b3; /* גוון כחול כהה יותר בהובר */
+        }
+
+        /* סגנון מיוחד לכפתור האקסל */
+        .excel-button svg {
+            /* Excel green color: #107C41 */
+            color: #107C41; 
+        }
+        .excel-button:hover svg {
+            color: #0c5c31; 
+        }
+
+        .disabled-link {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    </style>
+</head>
+<body class="rtl">
+
+    <!-- כותרת ראשית קבועה (Header) -->
+    <header class="w-full border-b border-gray-200 bg-white z-50 sticky top-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <!-- חזרה ללוח המחוונים הראשי -->
+                <a href="תפריט ראשי2.HTML" class="text-gray-500 hover:text-lok-primary transition-colors flex items-center text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1 transform rotate-180"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    חזרה לתפריט ראשי
+                </a>
+                
+                <h1 class="text-2xl font-black text-lok-dark-gray border-r-4 border-lok-primary pr-3">
+                    <span class="text-lok-primary">כספים ופיננסים</span>
+                    <span class="text-xl font-light"> | תפריט ראשי</span>
+                </h1>
+            </div>
+
+            <!-- פרופיל משתמש (דמו) -->
+            <div class="flex items-center">
+                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-xs font-bold mr-3">
+                    דמו
+                </div>
+            </div>
+        </div>
+    </header>
+
+    
+    <!-- תוכן ראשי ממורכז במרכז המסך -->
+    <main class="flex-grow flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl w-full text-center">
+            <h2 class="text-4xl font-extrabold text-lok-dark-gray mb-10">
+                בחר פעולה פיננסית:
+            </h2>
+            
+            <!-- רשת כפתורים (Grid) - כעת 3 עמודות במסך גדול -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- כפתור 1: הוצאות קבועות -->
+                <a href="javascript:void(0)" title="הקישור אינו פעיל עדיין" class="disabled-link financial-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-credit-card"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                    <span class="text-2xl font-bold text-lok-dark-gray">הוצאות קבועות</span>
+                    <span class="text-gray-500 mt-1">ניהול מעקב תקציב חודשי</span>
+                </a>
+
+                <!-- כפתור 2: מחירון פר ספק -->
+                <a href="javascript:void(0)" title="הקישור אינו פעיל עדיין" class="disabled-link financial-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-users"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span class="text-2xl font-bold text-lok-dark-gray">מחירון פר ספק</span>
+                    <span class="text-gray-500 mt-1">סקירת תעריפי ספקים חיצוניים</span>
+                </a>
+                
+                <!-- כפתור 3: מעבר לאקסל -->
+                <a href="#" class="financial-button excel-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
+                    <span class="text-2xl font-bold text-lok-dark-gray">מעבר לאקסל</span>
+                    <span class="text-gray-500 mt-1">הורדת נתונים אוטומטית</span>
+                </a>
+                
+            </div>
+            
+            <p class="mt-12 text-sm text-gray-400">
+                *לחץ על כפתור כדי לעבור לדף הנתונים המתאים (קישורים זמניים: #)
+            </p>
+        </div>
+    </main>
+    
+</body>
+</html>

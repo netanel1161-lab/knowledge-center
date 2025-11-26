@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ספריית אייקוני SVG להעתקה והורדה</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF', 
+                        'lok-dark-gray': '#1F2937', 
+                        'lok-soft-gray': '#F3F4F6', 
+                        'lok-accent': '#10B981',
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: #F9FAFB;
+            color: #1F2937;
+        }
+
+        /* סגנון כרטיס האייקון */
+        .icon-card {
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background-color: white;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .icon-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #007AFF;
+        }
+
+        /* סגנון פנימי לאייקון עצמו */
+        .icon-svg {
+            width: 48px;
+            height: 48px;
+            stroke-width: 2; /* עובי קו ברירת מחדל */
+            color: #4B5563; /* צבע אפור כהה */
+            transition: color 0.2s;
+        }
+        
+        .icon-card:hover .icon-svg {
+            color: #007AFF; /* צבע כחול בריחוף */
+        }
+    </style>
+</head>
+<body class="rtl">
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <!-- כותרת ראשית והסבר -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-lok-dark-gray mb-3">ספריית אייקוני SVG</h1>
+            <p class="text-xl text-gray-600">לחץ על אייקון כדי להעתיק את קוד ה-SVG, או לחץ על כפתור ההורדה.</p>
+        </header>
+
+        <!-- הודעת הצלחה (נסתרת בהתחלה) -->
+        <div id="copy-message" class="fixed top-0 inset-x-0 transition-transform duration-300 transform -translate-y-full p-4 text-center bg-lok-accent text-white font-medium shadow-xl z-50 rounded-b-lg">
+            <span id="copied-name"></span> - קוד ה-SVG הועתק בהצלחה!
+        </div>
+
+        <!-- מיכל האייקונים -->
+        <div id="icon-container" class="space-y-12">
+            <!-- התוכן ימולא באמצעות JavaScript -->
+        </div>
+        
+    </div>
+
+    <script>
+        // הגדרת נתוני האייקונים - קטגוריות ושמות
+        const iconData = {
+            'קשר ותקשורת': [
+                { name: 'Mail (מייל)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.83 1.83 0 0 1-2.06 0L2 7"/></svg>' },
+                { name: 'Phone (טלפון)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 3.08 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' },
+                { name: 'Message (הודעה/צ\'אט)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' },
+                { name: 'Link (אתר/לינק)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07L13 7"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07L11 17"/></svg>' },
+                { name: 'Location (מיקום/מפה)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>' },
+            ],
+            'ממשק משתמש וכללי': [
+                { name: 'Settings (הגדרות)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.44a2 2 0 0 0-2 2H4a2 2 0 0 0-2 2v.44a2 2 0 0 0 2 2h.44a2 2 0 0 0 2 2v.44a2 2 0 0 0 2 2h.44a2 2 0 0 0 2 2v.44a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.44a2 2 0 0 0 2-2h.44a2 2 0 0 0 2-2v-.44a2 2 0 0 0-2-2h-.44a2 2 0 0 0-2-2v-.44a2 2 0 0 0-2-2h-.44a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>' },
+                { name: 'User (משתמש)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' },
+                { name: 'Home (בית)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>' },
+                { name: 'Info (מידע)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>' },
+                { name: 'Search (חיפוש)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>' },
+            ],
+            'מסחר וכספים': [
+                { name: 'Cart (עגלת קניות)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.72a2 2 0 0 0 2-1.58L23.95 4.05h-21"/></svg>' },
+                { name: 'Credit Card (כרטיס אשראי)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg>' },
+                { name: 'Package (חבילה)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 9-5"/><path d="M12 22V12"/></svg>' },
+                { name: 'Lock (נעילה)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' },
+                { name: 'Calendar (יומן)', svg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>' },
+            ],
+        };
+
+        const copyMessage = document.getElementById('copy-message');
+        const copiedName = document.getElementById('copied-name');
+        
+        // פונקציה להעתקת קוד SVG ללוח הזיכרון
+        function copySvg(svgString, iconName) {
+            try {
+                // יצירת אלמנט זמני להעתקה
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = svgString;
+                document.body.appendChild(tempTextArea);
+                
+                // בחירת הטקסט
+                tempTextArea.select();
+                tempTextArea.setSelectionRange(0, 99999); // לניידים
+                
+                // ביצוע העתקה
+                document.execCommand('copy');
+                
+                // הסרת האלמנט
+                document.body.removeChild(tempTextArea);
+                
+                // הצגת הודעת הצלחה
+                copiedName.textContent = iconName;
+                copyMessage.classList.remove('-translate-y-full');
+                copyMessage.classList.add('translate-y-0');
+
+                setTimeout(() => {
+                    copyMessage.classList.remove('translate-y-0');
+                    copyMessage.classList.add('-translate-y-full');
+                }, 2000);
+
+            } catch (err) {
+                console.error('Failed to copy SVG: ', err);
+                alert('שגיאה בהעתקה. אנא נסה שוב או הורד את הקובץ.');
+            }
+        }
+
+        // פונקציה להורדת קובץ SVG
+        function downloadSvg(svgString, iconName) {
+            const fileName = iconName.split(' ')[0] + '.svg'; // לוקח רק את השם באנגלית
+            const blob = new Blob([svgString], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // פונקציה ליצירת כרטיס אייקון
+        function createIconCard(icon) {
+            const card = document.createElement('div');
+            card.className = 'icon-card p-4 rounded-xl relative';
+            card.setAttribute('title', `לחץ להעתקת קוד ${icon.name}`);
+            
+            // המכל המרכזי של האייקון - בלחיצה עליו מעתיקים
+            const iconWrapper = document.createElement('div');
+            iconWrapper.className = 'flex flex-col items-center justify-center h-full w-full';
+            iconWrapper.innerHTML = `<div class="icon-svg my-3">${icon.svg}</div>`;
+            
+            // שם האייקון
+            const iconName = document.createElement('p');
+            iconName.className = 'text-sm font-medium text-center text-gray-500 mt-2 h-10';
+            iconName.textContent = icon.name;
+
+            // אזור כפתורי הפעולה
+            const actions = document.createElement('div');
+            actions.className = 'flex justify-between items-center w-full mt-4 border-t pt-3';
+            
+            // כפתור העתקה
+            const copyButton = document.createElement('button');
+            copyButton.className = 'w-full bg-lok-primary text-white text-xs font-semibold py-2 px-3 rounded-lg hover:bg-blue-600 transition-colors shadow-md';
+            copyButton.textContent = 'העתק קוד';
+            copyButton.onclick = (e) => {
+                e.stopPropagation(); // מונע הפעלת העתקה כפולה מהכרטיס
+                copySvg(icon.svg, icon.name);
+            };
+
+            // כפתור הורדה
+            const downloadButton = document.createElement('button');
+            downloadButton.className = 'flex items-center justify-center bg-gray-200 text-lok-dark-gray text-xs font-semibold py-2 px-3 rounded-lg hover:bg-gray-300 transition-colors mr-2';
+            downloadButton.title = 'הורדת קובץ SVG';
+            downloadButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>`;
+            downloadButton.onclick = (e) => {
+                e.stopPropagation();
+                downloadSvg(icon.svg, icon.name);
+            };
+
+            actions.appendChild(copyButton);
+            actions.appendChild(downloadButton);
+
+            card.appendChild(iconWrapper);
+            card.appendChild(iconName);
+            card.appendChild(actions);
+
+            // לחיצה על כל הכרטיס מעתיקה את ה-SVG (חוץ מכפתור ההורדה)
+            card.addEventListener('click', () => copySvg(icon.svg, icon.name));
+            
+            return card;
+        }
+
+        // טעינת האייקונים לתוך הדף
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('icon-container');
+
+            for (const category in iconData) {
+                // יצירת כותרת קטגוריה
+                const categoryTitle = document.createElement('h2');
+                categoryTitle.className = 'text-3xl font-bold text-lok-dark-gray border-r-4 border-lok-primary pr-3 mb-6 mt-8';
+                categoryTitle.textContent = category;
+                container.appendChild(categoryTitle);
+
+                // יצירת מכל לרשת האייקונים
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6';
+                
+                iconData[category].forEach(icon => {
+                    grid.appendChild(createIconCard(icon));
+                });
+
+                container.appendChild(grid);
+            }
+        });
+
+    </script>
+</body>
+</html>

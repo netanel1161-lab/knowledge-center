@@ -1,0 +1,11 @@
+Flask
+pymongo
+chromadb
+sentence-transformers
+beautifulsoup4
+Flask-Login
+Flask-WTF
+Flask-Limiter
+Flask-Cors
+pydantic
+python-dotenv

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>l00K | גלריית צוות</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF', 
+                        'lok-dark-gray': '#1F2937', 
+                        'lok-soft-gray': '#F9FAFB', 
+                        'lok-blue-light': '#EBF5FF',
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* הגדרת משתני CSS נוחים לשימוש ברקע */
+        :root {
+            --lok-primary: #007AFF;
+            --lok-blue-light: #EBF5FF;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            color: #1F2937;
+            min-height: 100vh;
+            background-color: #F9FAFB;
+            position: relative; 
+            overflow-x: hidden; 
+        }
+        
+        /* ------------------------------------- */
+        /* עיצוב הרקע הגיאומטרי (עיגולים מטושטשים) - כמו בדף הקודם */
+        /* ------------------------------------- */
+
+        /* עיגול גדול עליון-שמאלי בהיר */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -100px; 
+            right: 80%; 
+            width: 700px; 
+            height: 700px; 
+            border-radius: 50%;
+            background-color: var(--lok-blue-light);
+            opacity: 0.6; 
+            z-index: -1; 
+            filter: blur(120px); 
+        }
+
+        /* עיגול גדול תחתון-ימני כהה יותר */
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -200px; 
+            left: 70%; 
+            width: 800px; 
+            height: 800px; 
+            border-radius: 50%;
+            background-color: var(--lok-primary); 
+            opacity: 0.05; 
+            z-index: -1; 
+            filter: blur(150px); 
+        }
+
+        /* ------------------------------------- */
+        /* עיצוב כרטיס גלריה */
+        /* ------------------------------------- */
+
+        .gallery-card {
+            cursor: pointer;
+            overflow: hidden; /* מסתיר חלקים מהתמונה שגולשים */
+            background-color: #EBF5FF; /* רקע בזמן טעינת תמונה */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .gallery-card img, .gallery-card video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* גורם לתמונה/וידאו למלא את הכרטיס */
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-card:hover {
+            box-shadow: 0 10px 20px rgba(0, 122, 255, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .gallery-card:hover img {
+            transform: scale(1.05);
+        }
+        
+        /* אייקון "Play" לכרטיסי וידאו */
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.3);
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+        
+        .gallery-card:hover .video-overlay {
+            opacity: 1;
+        }
+
+        .video-overlay svg {
+            width: 60px;
+            height: 60px;
+            color: white;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+        
+        /* ------------------------------------- */
+        /* לייטבוקס (Modal) */
+        /* ------------------------------------- */
+        
+        #lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            display: none; /* יופעל ע"י JS */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        #lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        
+        #lightbox-content img, #lightbox-content video {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        #lightbox-close {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            width: 30px;
+            height: 30px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: black;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+    </style>
+</head>
+<body class="rtl">
+
+    <!-- כותרת ראשית קבועה (Header) -->
+    <header class="sticky top-0 w-full border-b border-gray-200 bg-white z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <!-- חזרה ללוח המחוונים הראשי -->
+                <a href="dashboard.html" class="text-gray-500 hover:text-lok-primary transition-colors flex items-center text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1 transform rotate-180"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    חזרה ללוח מחוונים
+                </a>
+                
+                <h1 class="text-2xl font-black text-lok-dark-gray border-r-4 border-lok-primary pr-3">
+                    <span class="text-lok-primary">גלריית צוות</span>
+                    <span class="text-xl font-light"> | מאגר מדיה</span>
+                </h1>
+            </div>
+
+            <!-- פרופיל משתמש (דמו) -->
+            <div class="flex items-center">
+                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-xs font-bold mr-3">
+                    דמו
+                </div>
+            </div>
+        </div>
+    </header>
+
+    
+    <!-- תוכן ראשי -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16">
+
+        <!-- כותרת ראשית של הדף -->
+        <div class="text-center my-8">
+            <h1 class="text-4xl lg:text-5xl font-extrabold text-lok-dark-gray leading-tight mb-3">
+                הרגעים שלנו
+            </h1>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                תיעוד רגעים, פגישות, אירועי חברה וכל מה שקורה מאחורי הקלעים של לוק.
+            </p>
+        </div>
+
+        <!-- מקטע חודש: אוקטובר 2025 -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-lok-dark-gray mb-6 border-r-4 border-lok-primary pr-3">אוקטובר 2025</h2>
+            
+            <!-- רשת תמונות ווידאו -->
+            <!-- aspect-ratio-video (16:9), aspect-ratio-square (1:1), aspect-ratio-portrait (במובייל) -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                
+                <!-- פריט 1: תמונה רגילה (16:9) -->
+                <div class="gallery-card rounded-xl aspect-[16/9]" 
+                     data-type="image" 
+                     data-src="https://placehold.co/800x450/007AFF/FFFFFF?text=Company+Meeting">
+                    <img src="https://placehold.co/800x450/007AFF/FFFFFF?text=Company+Meeting" alt="פגישת חברה אוקטובר 2025" class="rounded-xl">
+                </div>
+
+                <!-- פריט 2: תמונה ריבועית (1:1) -->
+                <div class="gallery-card rounded-xl aspect-square" 
+                     data-type="image" 
+                     data-src="https://placehold.co/600x600/1F2937/FFFFFF?text=Team+Lunch">
+                    <img src="https://placehold.co/600x600/1F2937/FFFFFF?text=Team+Lunch" alt="ארוחת צהריים צוותית" class="rounded-xl">
+                </div>
+
+                <!-- פריט 3: וידאו (16:9) -->
+                <div class="gallery-card rounded-xl aspect-[16/9]" 
+                     data-type="video" 
+                     data-src="https://www.w3schools.com/html/mov_bbb.mp4"> <!-- מקור וידאו זמני אמיתי -->
+                    
+                    <!-- תמונת נושא (Poster) לווידאו -->
+                    <img src="https://placehold.co/800x450/10B981/FFFFFF?text=Event+Highlight+(Video)" alt="סיכום אירוע חברה" class="rounded-xl">
+                    
+                    <!-- אייקון Play -->
+                    <div class="video-overlay">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                    </div>
+                </div>
+
+                <!-- פריט 4: תמונה אנכית (תופס 2 שורות) -->
+                <div class="gallery-card rounded-xl aspect-[9/16] sm:aspect-[9/16] col-span-1 row-span-2" 
+                     data-type="image" 
+                     data-src="https://placehold.co/450x800/EBF5FF/1F2937?text=Office+View">
+                    <img src="https://placehold.co/450x800/EBF5FF/1F2937?text=Office+View" alt="נוף מהמשרד" class="rounded-xl">
+                </div>
+                
+                <!-- פריט 5: תמונה רגילה (16:9) -->
+                <div class="gallery-card rounded-xl aspect-[16/9]" 
+                     data-type="image" 
+                     data-src="https://placehold.co/800x450/F59E0B/FFFFFF?text=Workshop">
+                    <img src="https://placehold.co/800x450/F59E0B/FFFFFF?text=Workshop" alt="סדנה מקצועית" class="rounded-xl">
+                </div>
+
+                <!-- פריט 6: תמונה רגילה (16:9) -->
+                <div class="gallery-card rounded-xl aspect-[16/9]" 
+                     data-type="image" 
+                     data-src="https://placehold.co/800x450/EF4444/FFFFFF?text=Happy+Hour">
+                    <img src="https://placehold.co/800x450/EF4444/FFFFFF?text=Happy+Hour" alt="האפי האוור" class="rounded-xl">
+                </div>
+            </div>
+        </section>
+
+
+        <!-- מקטע חודש: ספטמבר 2025 -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-lok-dark-gray mb-6 border-r-4 border-lok-primary pr-3">ספטמבר 2025</h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                
+                <!-- פריט 1: תמונה ריבועית -->
+                <div class="gallery-card rounded-xl aspect-square" 
+                     data-type="image" 
+                     data-src="https://placehold.co/600x600/007AFF/FFFFFF?text=Team+Photo">
+                    <img src="https://placehold.co/600x600/007AFF/FFFFFF?text=Team+Photo" alt="תמונת צוות" class="rounded-xl">
+                </div>
+
+                <!-- פריט 2: תמונה רגילה -->
+                <div class="gallery-card rounded-xl aspect-[16/9]" 
+                     data-type="image" 
+                     data-src="https://placehold.co/800x450/1F2937/FFFFFF?text=Brainstorming">
+                    <img src="https://placehold.co/800x450/1F2937/FFFFFF?text=Brainstorming" alt="פגישת סיעור מוחות" class="rounded-xl">
+                </div>
+
+                <!-- פריט 3: תמונה רגילה -->
+                <div class="gallery-card rounded-xl aspect-[16/9]" 
+                     data-type="image" 
+                     data-src="https://placehold.co/800x450/EBF5FF/1F2937?text=Work+Setup">
+                    <img src="https://placehold.co/800x450/EBF5FF/1F2937?text=Work+Setup" alt="עמדת עבודה" class="rounded-xl">
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- לייטבוקס (Modal) - מוסתר כברירת מחדל -->
+    <div id="lightbox" onclick="closeLightbox()">
+        <div id="lightbox-content" onclick="event.stopPropagation()">
+            <!-- התוכן (תמונה או וידאו) יוכנס כאן ע"י JS -->
+        </div>
+        <div id="lightbox-close" onclick="closeLightbox()">✖</div>
+    </div>
+
+    <script>
+        const lightbox = document.getElementById('lightbox');
+        const lightboxContent = document.getElementById('lightbox-content');
+        
+        // פתיחת הלייטבוקס
+        function openLightbox(element) {
+            const type = element.dataset.type;
+            const src = element.dataset.src;
+            
+            // ניקוי תוכן קודם
+            lightboxContent.innerHTML = ''; 
+            
+            if (type === 'image') {
+                const img = document.createElement('img');
+                img.src = src;
+                lightboxContent.appendChild(img);
+            } 
+            
+            if (type === 'video') {
+                const video = document.createElement('video');
+                video.src = src;
+                video.controls = true;
+                video.autoplay = true;
+                lightboxContent.appendChild(video);
+            }
+            
+            lightbox.style.display = 'flex';
+        }
+        
+        // סגירת הלייטבוקס
+        function closeLightbox() {
+            lightbox.style.display = 'none';
+            // עצירת הוידאו ע"י מחיקת התוכן
+            lightboxContent.innerHTML = ''; 
+        }
+
+        // הוספת Event Listeners לכל הכרטיסים
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.gallery-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    openLightbox(card);
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>

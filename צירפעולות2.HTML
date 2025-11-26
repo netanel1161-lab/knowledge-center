@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ציר זמן וניהול פרויקט</title>
+    <!-- טעינת Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- הגדרות קונפיגורציה של Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-color': '#3b82f6', // כחול
+                        'secondary-gray': '#f3f4f6',
+                        'dark-text': '#1f2937',
+                        'current-marker': '#ef4444', // אדום להדגשת "כאן ועכשיו"
+                        'progress-bar': '#10b981', // ירוק להתקדמות
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- ייבוא dayjs לניהול תאריכים -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/locale/he.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/plugin/customParseFormat.js"></script>
+    <script>
+        dayjs.locale('he'); // הגדרת שפה עברית
+        dayjs.extend(dayjs_plugin_customParseFormat);
+    </script>
+
+    <style>
+        /* הגדרת הפונט הראשי */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        /* סגנון כללי לציר הזמן האנכי */
+        .timeline-container { position: relative; }
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 20px;
+            width: 4px;
+            background-color: #d1d5db;
+            height: 100%;
+            border-radius: 9999px;
+            z-index: 1;
+        }
+        .timeline-item-marker {
+            position: absolute;
+            right: 13px;
+            width: 18px;
+            height: 18px;
+            background-color: #f9fafb;
+            border: 4px solid #3b82f6; 
+            border-radius: 50%;
+            z-index: 10;
+        }
+        /* סמן מיוחד לחודש הנוכחי */
+        .timeline-item-marker.current-month-marker {
+            border: 4px solid #ef4444; /* אדום */
+            box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.2);
+        }
+
+        .timeline-content { margin-right: 40px; z-index: 5; }
+        
+        /* צמצום והצגה של משימות */
+        .tasks-container {
+            max-height: 9rem;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .tasks-container.expanded { max-height: 2000px; }
+        
+        /* ---------------------------------- */
+        /* סגנון לציר הדרך העליון (A-B-C) */
+        /* ---------------------------------- */
+        .roadmap-container { position: relative; padding-top: 20px; }
+        .roadmap-track {
+            position: absolute;
+            top: 30px;
+            left: 5%; 
+            right: 5%;
+            height: 6px;
+            background-color: #d1d5db;
+            border-radius: 9999px;
+            z-index: 1;
+        }
+        .roadmap-progress {
+            height: 6px;
+            background-color: #10b981; /* ירוק התקדמות */
+            border-radius: 9999px;
+            transition: width 0.5s ease-out;
+            z-index: 2;
+        }
+
+        .roadmap-dot {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .roadmap-dot-inner {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #d1d5db;
+            border: 3px solid #ffffff;
+            transition: all 0.3s ease-in-out;
+            position: relative;
+            z-index: 5;
+            box-shadow: 0 0 0 2px #d1d5db;
+        }
+        .roadmap-dot.passed .roadmap-dot-inner {
+            background-color: #10b981; /* ירוק */
+            border-color: #90ee90;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+        }
+        .roadmap-dot.current .roadmap-dot-inner {
+            width: 30px;
+            height: 30px;
+            background-color: #ef4444; /* אדום */
+            border: 5px solid #fca5a5;
+            box-shadow: 0 0 0 4px #fee2e2;
+        }
+        
+        /* סמני אנשים */
+        .person-marker-eliran { background-color: #2563eb; } 
+        .person-marker-aviram { background-color: #f59e0b; }
+        .person-marker-alex { background-color: #10b981; }
+        .person-marker-david { background-color: #ef4444; }
+        .person-marker-vered { background-color: #a855f7; }
+        .person-marker-netanel { background-color: #06b6d4; }
+
+        /* סמני סטטוס */
+        .status-planned { background-color: #9ca3af; }
+        .status-in-progress { background-color: #f59e0b; }
+        .status-completed { background-color: #3b82f6; }
+
+        /* עיצוב טאבים */
+        .tab-button.active {
+            border-bottom: 4px solid #3b82f6;
+            color: #1f2937;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-dark-text min-h-screen pb-16">
+
+    <!-- כותרת וטאבים -->
+    <header class="sticky top-0 bg-white shadow-md z-20 p-4 border-b border-gray-100">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-3xl font-extrabold text-dark-text mb-4 md:mb-0">
+                ניהול ציר זמן
+            </h1>
+            
+            <!-- כפתורי הטאבים -->
+            <div class="flex items-center space-x-6 space-x-reverse text-xl font-medium">
+                <button id="tab-timeline" class="tab-button active pb-2 text-gray-500 hover:text-dark-text transition duration-150" onclick="switchTab('timeline')">
+                    ציר זמן
+                </button>
+                <button id="tab-management" class="tab-button pb-2 text-gray-500 hover:text-dark-text transition duration-150" onclick="switchTab('management')">
+                    עמוד ניהול
+                </button>
+            </div>
+
+            <div id="loading-indicator" class="hidden text-primary-color font-semibold">
+                ...טוען נתונים
+            </div>
+        </div>
+    </header>
+
+    <!-- תוכן עיקרי -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+        
+        <!-- ============================================== -->
+        <!-- VIEW 1: ציר זמן (Timeline View) -->
+        <!-- ============================================== -->
+        <section id="view-timeline" class="tab-content">
+            
+            <!-- ציר הדרך הכללי (A-B-C) -->
+            <div id="roadmap-container" class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 mb-8">
+                <h2 class="text-2xl font-bold text-dark-text mb-8 border-b pb-2">מפת דרכים כללית (Roadmap)</h2>
+                <div id="roadmap-abc" class="flex justify-between items-start text-center roadmap-container">
+                    <div class="roadmap-track">
+                        <div id="roadmap-progress-bar" class="roadmap-progress"></div>
+                    </div>
+                    <!-- נקודות הציון ירונדרו לכאן -->
+                </div>
+            </div>
+
+            <!-- סינון (מוזז למטה, כפי שנדרש) -->
+            <div class="flex justify-start md:justify-end mb-8">
+                <div class="flex items-center space-x-2 space-x-reverse bg-white p-3 rounded-xl shadow-md border border-gray-200">
+                    <label for="person-filter" class="text-lg font-medium whitespace-nowrap">סינון לפי אחראי/ת:</label>
+                    <select id="person-filter" 
+                            class="p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-color focus:border-primary-color text-gray-700 transition duration-150 ease-in-out">
+                        <!-- האפשרויות יטענו ע"י JavaScript -->
+                    </select>
+                </div>
+            </div>
+
+            <h2 class="text-2xl font-bold text-dark-text mb-6">משימות לפי חודש ואחראי/ת</h2>
+            <div id="timeline-output" class="timeline-container mt-8">
+                <!-- ציר הזמן האנכי ירונדר לכאן -->
+            </div>
+            
+            <!-- הודעת אין נתונים -->
+            <div id="no-data-message" class="hidden text-center p-8 mt-12 bg-white rounded-xl shadow-lg border border-gray-200">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="mt-2 text-xl font-semibold text-gray-900">אין משימות להצגה</h3>
+                <p class="mt-1 text-gray-500">וודא שבחרת את הסינון הנכון, או הוסף משימות בעמוד הניהול.</p>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 2: עמוד ניהול (Management View) -->
+        <!-- ============================================== -->
+        <section id="view-management" class="tab-content hidden">
+            
+            <!-- כרטיס ניהול Roadmap -->
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200 mb-10">
+                <h2 class="text-2xl font-bold text-dark-text mb-6 border-b pb-2">1. ניהול מפת דרכים (A-B-C)</h2>
+                <form id="roadmap-form" class="space-y-6">
+                    <p class="text-sm text-gray-600">עדכן את כותרת, חודש (יש לבחור חודש מהרשימה) ותיאור היעד לכל אחת מנקודות הדרך.</p>
+
+                    <!-- נקודה A -->
+                    <div class="border p-4 rounded-lg bg-secondary-gray/50">
+                        <h3 class="font-bold text-lg text-primary-color mb-2">נקודה A</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" id="a-title" placeholder="כותרת קצרה (למשל: נקודה A)" class="input-field" required>
+                            <select id="a-month" class="input-field month-select" required></select>
+                            <input type="text" id="a-goal" placeholder="יעד ראשי (למשל: פיתוח לוגיסטי)" class="input-field" required>
+                        </div>
+                    </div>
+
+                    <!-- נקודה B -->
+                    <div class="border p-4 rounded-lg bg-secondary-gray/50">
+                        <h3 class="font-bold text-lg text-primary-color mb-2">נקודה B</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" id="b-title" placeholder="כותרת קצרה (למשל: נקודה B)" class="input-field" required>
+                            <select id="b-month" class="input-field month-select" required></select>
+                            <input type="text" id="b-goal" placeholder="יעד ראשי (למשל: בדיקות כלים בשטח)" class="input-field" required>
+                        </div>
+                    </div>
+
+                    <!-- נקודה C -->
+                    <div class="border p-4 rounded-lg bg-secondary-gray/50">
+                        <h3 class="font-bold text-lg text-primary-color mb-2">נקודה C (הנוכחי)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" id="c-title" placeholder="כותרת קצרה (למשל: נקודה C)" class="input-field" required>
+                            <select id="c-month" class="input-field month-select" required></select>
+                            <input type="text" id="c-goal" placeholder="יעד ראשי (למשל: יציאה לשוק)" class="input-field" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="save-roadmap-btn" class="w-full bg-primary-color text-white py-3 px-6 rounded-lg font-bold hover:bg-blue-700 transition duration-150 shadow-md">
+                        שמור שינויי מפת דרכים
+                    </button>
+                    <div id="roadmap-msg" class="text-center font-semibold text-green-600 hidden">השינויים נשמרו בהצלחה!</div>
+                </form>
+            </div>
+
+            <!-- כרטיס הוספת משימה -->
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200 mb-10">
+                <h2 class="text-2xl font-bold text-dark-text mb-6 border-b pb-2">2. הוספת משימה חדשה</h2>
+                <form id="add-task-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
+                        <!-- חודש -->
+                        <div class="flex flex-col">
+                            <label for="task-month" class="label">חודש (יש לבחור מהרשימה)</label>
+                            <select id="task-month" class="input-field month-select" required></select>
+                        </div>
+                        
+                        <!-- אדם -->
+                        <div class="flex flex-col">
+                            <label for="task-person" class="label">אחראי/ת</label>
+                            <select id="task-person" class="input-field" required>
+                                <!-- האפשרויות יטענו ע"י JS -->
+                            </select>
+                        </div>
+                        
+                        <!-- סטטוס -->
+                        <div class="flex flex-col">
+                            <label for="task-status" class="label">סטטוס</label>
+                            <select id="task-status" class="input-field" required>
+                                <option value="מתוכנן">מתוכנן</option>
+                                <option value="בעבודה">בעבודה</option>
+                                <option value="הושלם">הושלם</option>
+                            </select>
+                        </div>
+                        
+                        <!-- קישור -->
+                        <div class="flex flex-col">
+                            <label for="task-link" class="label">קישור (אופציונלי - פיגמה, דוקס, טרלו וכו')</label>
+                            <input type="url" id="task-link" placeholder="http://..." class="input-field">
+                        </div>
+                    </div>
+                    
+                    <!-- תיאור משימה -->
+                    <div class="flex flex-col">
+                        <label for="task-description" class="label">תיאור המשימה המלא</label>
+                        <textarea id="task-description" rows="3" placeholder="כתיבת מסמך דרישות עבור..." class="input-field" required></textarea>
+                    </div>
+
+                    <button type="submit" id="add-task-btn" class="w-full bg-green-500 text-white py-3 px-6 rounded-lg font-bold hover:bg-green-600 transition duration-150 shadow-md">
+                        הוסף משימה
+                    </button>
+                    <div id="task-msg" class="text-center font-semibold text-green-600 hidden">המשימה נוספה בהצלחה!</div>
+                </form>
+            </div>
+
+            <!-- טבלת ניהול ועריכת משימות -->
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+                <h2 class="text-2xl font-bold text-dark-text mb-6 border-b pb-2">3. עריכה ומחיקה של משימות קיימות</h2>
+                <div id="tasks-list-management" class="space-y-4">
+                    <!-- המשימות ירונדרו לכאן -->
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Modal לעריכת משימה (במקום alert) -->
+    <div id="edit-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg" dir="rtl">
+            <h3 class="text-xl font-bold text-dark-text mb-4 border-b pb-2">עריכת משימה</h3>
+            <form id="edit-task-form" class="space-y-4">
+                <input type="hidden" id="edit-id">
+                
+                <div class="flex flex-col">
+                    <label for="edit-description" class="label">תיאור המשימה</label>
+                    <textarea id="edit-description" rows="3" class="input-field" required></textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col">
+                        <label for="edit-month" class="label">חודש</label>
+                        <select id="edit-month" class="input-field month-select-edit" required></select>
+                    </div>
+                    
+                    <div class="flex flex-col">
+                        <label for="edit-person" class="label">אחראי/ת</label>
+                        <select id="edit-person" class="input-field person-select-edit" required></select>
+                    </div>
+                    
+                    <div class="flex flex-col">
+                        <label for="edit-status" class="label">סטטוס</label>
+                        <select id="edit-status" class="input-field" required>
+                            <option value="מתוכנן">מתוכנן</option>
+                            <option value="בעבודה">בעבודה</option>
+                            <option value="הושלם">הושלם</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex flex-col">
+                        <label for="edit-link" class="label">קישור (אופציונלי)</label>
+                        <input type="url" id="edit-link" class="input-field">
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 space-x-reverse pt-4">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition duration-150">
+                        ביטול
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-primary-color text-white rounded-lg font-semibold hover:bg-blue-700 transition duration-150">
+                        שמור שינויים
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- הסטייל לטפסים (הגדרת מחלקה כללית לנוחות) -->
+    <style>
+        .input-field {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            width: 100%;
+            transition: all 0.15s;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .input-field:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        .label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #4b5563;
+        }
+    </style>
+
+    <!-- ייבוא ספריות Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, query, addDoc, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // ==============================================
+        // 1. הגדרות ומשתנים גלובליים
+        // ==============================================
+        
+        // הגדרת משתני Canvas גלובליים
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
+
+        const INITIAL_TASKS_DISPLAY = 2; // מספר המשימות שיוצגו בהתחלה
+        const roadmapCollectionPath = (uid) => `artifacts/${appId}/users/${uid}/config`;
+        const tasksCollectionPath = (uid) => `artifacts/${appId}/users/${uid}/tasks`;
+        
+        const people = [
+            { name: 'אלירן', class: 'person-marker-eliran' }, 
+            { name: 'אבירם', class: 'person-marker-aviram' }, 
+            { name: 'אלכס', class: 'person-marker-alex' }, 
+            { name: 'דוד', class: 'person-marker-david' }, 
+            { name: 'ורד', class: 'person-marker-vered' }, 
+            { name: 'נתנאל', class: 'person-marker-netanel' }
+        ];
+        
+        // נתונים ראשוניים ל-Roadmap אם אין נתונים ב-Firestore
+        const defaultRoadmap = {
+            a: { month: dayjs().add(2, 'month').format('MMMM YYYY'), title: 'נקודה A', goal: 'פיתוח טכנולוגיה ולוגיסטי' },
+            b: { month: dayjs().add(5, 'month').format('MMMM YYYY'), title: 'נקודה B', goal: 'בדיקת כלים בשטח והתנגדויות ראשונות' },
+            c: { month: dayjs().add(8, 'month').format('MMMM YYYY'), title: 'נקודה C', goal: 'יציאה לשוק והטמעת המערכות' },
+        };
+        
+        let currentRoadmapData = { ...defaultRoadmap };
+        let currentTasksData = [];
+        const MONTH_FORMAT = 'MMMM YYYY'; // פורמט שמירה אחיד
+        
+        // רכיבי DOM
+        const filterSelect = document.getElementById('person-filter');
+        const personSelect = document.getElementById('task-person');
+        const timelineOutput = document.getElementById('timeline-output');
+        const roadmapAbcDiv = document.getElementById('roadmap-abc');
+        const noDataMessage = document.getElementById('no-data-message');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const viewTimeline = document.getElementById('view-timeline');
+        const viewManagement = document.getElementById('view-management');
+        const tasksListManagement = document.getElementById('tasks-list-management');
+        const editModal = document.getElementById('edit-modal');
+        
+        // ==============================================
+        // 2. פונקציות עזר לתאריכים וטפסים
+        // ==============================================
+
+        /**
+         * מייצר רשימת חודשים קדימה (12 חודשים) בפורמט MMMM YYYY
+         */
+        function generateMonthOptions() {
+            const months = [];
+            let current = dayjs();
+            for (let i = 0; i < 12; i++) {
+                months.push(current.format(MONTH_FORMAT));
+                current = current.add(1, 'month');
+            }
+            return months;
+        }
+
+        /**
+         * ממלא את כל רשימות הדרופדאון של החודשים בנתונים
+         */
+        function populateMonthDropdowns() {
+            const monthOptions = generateMonthOptions();
+            const selects = document.querySelectorAll('.month-select');
+            const editSelects = document.querySelectorAll('.month-select-edit');
+            
+            [...selects, ...editSelects].forEach(select => {
+                let optionsHtml = '';
+                monthOptions.forEach(month => {
+                    optionsHtml += `<option value="${month}">${month}</option>`;
+                });
+                select.innerHTML = optionsHtml;
+            });
+        }
+        
+        /**
+         * מחשב את המיקום היחסי של החודש הנוכחי בין A ל-C
+         */
+        function calculateRoadmapProgress(roadmap) {
+            if (!roadmap.a || !roadmap.c) return 0;
+
+            const startMonth = dayjs(roadmap.a.month, MONTH_FORMAT);
+            const endMonth = dayjs(roadmap.c.month, MONTH_FORMAT);
+            const currentMonth = dayjs(); 
+
+            // בדיקת תקינות תאריכים
+            if (!startMonth.isValid() || !endMonth.isValid() || startMonth.isAfter(endMonth)) {
+                 console.warn("Roadmap dates are invalid or start is after end.");
+                 return 0; 
+            }
+
+            // חישוב חודשי פער כולל (כולל חודש התחלה)
+            const totalMonths = endMonth.diff(startMonth, 'month');
+            
+            if (totalMonths <= 0) return 0; // מניעת חלוקה באפס או פער שלילי
+
+            // חישוב חודשי התקדמות מההתחלה עד היום
+            let progressMonths = currentMonth.diff(startMonth, 'month');
+            
+            // הגבלה של אחוז ההתקדמות לטווח [0, 100]
+            if (progressMonths < 0) progressMonths = 0;
+            if (progressMonths > totalMonths) progressMonths = totalMonths;
+
+            const progress = (progressMonths / totalMonths) * 100;
+            return Math.min(100, Math.max(0, progress));
+        }
+
+        // ==============================================
+        // 3. פונקציות אתחול Firebase ו-UI
+        // ==============================================
+
+        /**
+         * פונקציית אתחול מלאה של Firebase ו-Auth
+         */
+        async function initializeFirebase() {
+            populateMonthDropdowns(); // ממלאים את הדרופדאונים לפני הכל
+            populatePersonDropdowns(); // ממלאים את הדרופדאונים של האנשים
+
+            loadingIndicator.classList.remove('hidden');
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // ניסיון התחברות עם טוקן מותאם אישית או אנונימית
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // האזנה לשינויים במצב ההתחברות (בכדי לקבל את ה-UID)
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        isAuthReady = true;
+                        console.log("Firebase initialized. User ID:", userId);
+                        
+                        // לאחר האותנטיקציה, מתחילים לטעון את הנתונים
+                        setupFirestoreListeners();
+                    } else {
+                        console.error("Authentication failed or logged out.");
+                        userId = null; 
+                        isAuthReady = true; 
+                        loadingIndicator.classList.add('hidden');
+                        renderTimeline(); 
+                    }
+                });
+
+            } catch (error) {
+                console.error("שגיאה באתחול Firebase:", error);
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+        
+        /**
+         * טוען נתונים ראשוניים ל-UI (סינון ואנשים בטפסים)
+         */
+        function populatePersonDropdowns() {
+            // טעינת אפשרויות הסינון (ציר זמן)
+            let filterOptionsHtml = `<option value="all">כל הצוות</option>`;
+            // טעינת אפשרויות האדם (עמוד ניהול)
+            let personOptionsHtml = '';
+            
+            people.forEach(p => {
+                filterOptionsHtml += `<option value="${p.name}">${p.name}</option>`;
+                personOptionsHtml += `<option value="${p.name}">${p.name}</option>`;
+            });
+            
+            filterSelect.innerHTML = filterOptionsHtml;
+            personSelect.innerHTML = personOptionsHtml;
+
+            // עדכון הדרופדאונים של העריכה
+            document.querySelectorAll('.person-select-edit').forEach(select => {
+                select.innerHTML = personOptionsHtml;
+            });
+            
+            filterSelect.addEventListener('change', renderTimeline);
+        }
+
+        /**
+         * מגדיר מאזיני onSnapshot לטעינת נתונים בזמן אמת
+         */
+        function setupFirestoreListeners() {
+            if (!isAuthReady || !userId) return;
+
+            // 1. האזנה לשינויים ב-Roadmap (config/roadmap)
+            const roadmapDocRef = doc(db, roadmapCollectionPath(userId), 'roadmap');
+            onSnapshot(roadmapDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    currentRoadmapData = docSnap.data();
+                    console.log("Roadmap loaded:", currentRoadmapData);
+                } else {
+                    console.log("Roadmap config not found. Using default.");
+                    currentRoadmapData = { ...defaultRoadmap }; 
+                }
+                populateRoadmapForm(currentRoadmapData);
+                renderRoadmap();
+            }, (error) => {
+                console.error("שגיאה בטעינת Roadmap:", error);
+            });
+
+
+            // 2. האזנה לשינויים במשימות (tasks collection)
+            const tasksQ = query(collection(db, tasksCollectionPath(userId))); 
+            
+            onSnapshot(tasksQ, (querySnapshot) => {
+                currentTasksData = [];
+                querySnapshot.forEach((doc) => {
+                    currentTasksData.push({ id: doc.id, ...doc.data() }); 
+                });
+
+                // מיון המשימות לפי חודש (כרונולוגי)
+                currentTasksData.sort((a, b) => {
+                    const dateA = dayjs(a.month, MONTH_FORMAT);
+                    const dateB = dayjs(b.month, MONTH_FORMAT);
+                    if (dateA.isValid() && dateB.isValid()) {
+                        return dateA.valueOf() - dateB.valueOf();
+                    }
+                    return 0; // אם התאריכים לא תקינים, לא ממיין
+                });
+
+                console.log(`Loaded ${currentTasksData.length} tasks.`);
+                loadingIndicator.classList.add('hidden');
+                renderTimeline();
+                renderManagementTasks(); // רינדור טבלת הניהול
+            }, (error) => {
+                console.error("שגיאה בטעינת משימות:", error);
+                loadingIndicator.classList.add('hidden');
+            });
+        }
+        
+        // ==============================================
+        // 4. פונקציות ניהול (Management)
+        // ==============================================
+
+        /**
+         * ממלא את טופס ה-Roadmap עם הנתונים הנוכחיים
+         */
+        function populateRoadmapForm(data) {
+            document.getElementById('a-title').value = data.a.title;
+            document.getElementById('a-month').value = data.a.month;
+            document.getElementById('a-goal').value = data.a.goal;
+            
+            document.getElementById('b-title').value = data.b.title;
+            document.getElementById('b-month').value = data.b.month;
+            document.getElementById('b-goal').value = data.b.goal;
+            
+            document.getElementById('c-title').value = data.c.title;
+            document.getElementById('c-month').value = data.c.month;
+            document.getElementById('c-goal').value = data.c.goal;
+        }
+
+        /**
+         * שמירת נתוני ה-Roadmap ל-Firestore
+         */
+        async function saveRoadmap(event) {
+            event.preventDefault();
+            if (!userId) {
+                alertUser("שגיאה: משתמש לא מאומת.", 'error', 'roadmap-msg');
+                return;
+            }
+
+            const newRoadmapData = {
+                a: { 
+                    title: document.getElementById('a-title').value,
+                    month: document.getElementById('a-month').value,
+                    goal: document.getElementById('a-goal').value
+                },
+                b: { 
+                    title: document.getElementById('b-title').value,
+                    month: document.getElementById('b-month').value,
+                    goal: document.getElementById('b-goal').value
+                },
+                c: { 
+                    title: document.getElementById('c-title').value,
+                    month: document.getElementById('c-month').value,
+                    goal: document.getElementById('c-goal').value
+                },
+            };
+            
+            try {
+                const roadmapDocRef = doc(db, roadmapCollectionPath(userId), 'roadmap');
+                await setDoc(roadmapDocRef, newRoadmapData);
+                alertUser("מפת הדרכים נשמרה בהצלחה!", 'success', 'roadmap-msg');
+            } catch (e) {
+                console.error("שגיאה בשמירת Roadmap: ", e);
+                alertUser("שגיאה בשמירת ה-Roadmap.", 'error', 'roadmap-msg');
+            }
+        }
+
+        /**
+         * הוספת משימה חדשה ל-Firestore
+         */
+        async function addTask(event) {
+            event.preventDefault();
+            if (!userId) {
+                alertUser("שגיאה: משתמש לא מאומת.", 'error', 'task-msg');
+                return;
+            }
+
+            const month = document.getElementById('task-month').value;
+            const person = document.getElementById('task-person').value;
+            const status = document.getElementById('task-status').value;
+            const task = document.getElementById('task-description').value;
+            const link = document.getElementById('task-link').value || null;
+
+            const newTask = {
+                month,
+                person,
+                status,
+                task,
+                link,
+                createdAt: serverTimestamp() // חותמת זמן לצורך מיון וסדר כרונולוגי
+            };
+
+            try {
+                const tasksColRef = collection(db, tasksCollectionPath(userId));
+                await addDoc(tasksColRef, newTask);
+                
+                alertUser("המשימה נוספה בהצלחה!", 'success', 'task-msg');
+                document.getElementById('add-task-form').reset(); // איפוס הטופס
+                // שומר על הערכים הנבחרים בדרופדאונים למקרה שהמשתמש רוצה להוסיף משימות דומות ברצף.
+            } catch (e) {
+                console.error("שגיאה בהוספת משימה: ", e);
+                alertUser("שגיאה בהוספת המשימה.", 'error', 'task-msg');
+            }
+        }
+        
+        /**
+         * פונקציה כללית להצגת הודעות הצלחה/שגיאה בטפסים
+         */
+        function alertUser(message, type, elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            
+            el.textContent = message;
+            el.classList.remove('hidden', 'text-green-600', 'text-red-600');
+            
+            if (type === 'success') {
+                el.classList.add('text-green-600');
+            } else {
+                el.classList.add('text-red-600');
+            }
+
+            setTimeout(() => {
+                el.classList.add('hidden');
+            }, 3000);
+        }
+
+        // ==============================================
+        // 5. ניהול משימות (עריכה / מחיקה)
+        // ==============================================
+
+        /**
+         * פתיחת מודאל העריכה ומילוי הנתונים
+         */
+        window.openModal = function(task) {
+            document.getElementById('edit-id').value = task.id;
+            document.getElementById('edit-description').value = task.task;
+            document.getElementById('edit-month').value = task.month;
+            document.getElementById('edit-person').value = task.person;
+            document.getElementById('edit-status').value = task.status;
+            document.getElementById('edit-link').value = task.link || '';
+            editModal.classList.remove('hidden');
+            editModal.classList.add('flex');
+        }
+
+        /**
+         * סגירת מודאל העריכה
+         */
+        window.closeModal = function() {
+            editModal.classList.remove('flex');
+            editModal.classList.add('hidden');
+        }
+
+        /**
+         * שמירת השינויים במשימה הערוכה
+         */
+        async function saveEditedTask(event) {
+            event.preventDefault();
+            const taskId = document.getElementById('edit-id').value;
+            if (!userId || !taskId) return;
+            
+            const updatedTask = {
+                task: document.getElementById('edit-description').value,
+                month: document.getElementById('edit-month').value,
+                person: document.getElementById('edit-person').value,
+                status: document.getElementById('edit-status').value,
+                link: document.getElementById('edit-link').value || null,
+            };
+
+            try {
+                const taskDocRef = doc(db, tasksCollectionPath(userId), taskId);
+                await updateDoc(taskDocRef, updatedTask);
+                closeModal();
+                console.log("Task updated successfully");
+            } catch (e) {
+                console.error("שגיאה בעדכון משימה: ", e);
+            }
+        }
+        
+        /**
+         * מחיקת משימה
+         */
+        window.deleteTask = async function(taskId) {
+            // שימוש במודל קונפירמציה פנימי במקום window.confirm
+            if (!confirmAction("האם אתה בטוח שברצונך למחוק משימה זו?")) {
+                return;
+            }
+            
+            if (!userId) return;
+            try {
+                const taskDocRef = doc(db, tasksCollectionPath(userId), taskId);
+                await deleteDoc(taskDocRef);
+                console.log("Task deleted successfully");
+            } catch (e) {
+                console.error("שגיאה במחיקת משימה: ", e);
+            }
+        }
+        
+        /**
+         * פונקציית קונפירמציה פנימית (במקום alert)
+         */
+        function confirmAction(message) {
+            // זוהי הדגמה, שבסביבת קוד אמיתית הייתה מוחלפת במודאל UI יפה
+            return prompt(`אישור נדרש: ${message}. הקלד 'כן' לאישור:`) === 'כן';
+        }
+
+        // ==============================================
+        // 6. פונקציות רינדור (Views)
+        // ==============================================
+
+        /**
+         * רינדור ציר הדרך העליון A-B-C
+         */
+        function renderRoadmap() {
+            const data = currentRoadmapData;
+            const roadmapPoints = [data.a, data.b, data.c];
+            const currentMonthKey = dayjs().format(MONTH_FORMAT);
+
+            // איפוס הרינדור לפני בניית HTML חדש
+            roadmapAbcDiv.innerHTML = `<div class="roadmap-track"><div id="roadmap-progress-bar" class="roadmap-progress"></div></div>`;
+            
+            let roadmapHtml = '';
+            
+            // חישוב ההתקדמות והגדרת סרגל ההתקדמות
+            const progress = calculateRoadmapProgress(data);
+            document.getElementById('roadmap-progress-bar').style.width = `${progress}%`;
+            
+            roadmapPoints.forEach((point, index) => {
+                const pointMonth = dayjs(point.month, MONTH_FORMAT);
+                const isCurrentMonth = point.month === currentMonthKey;
+                const isPassed = pointMonth.isValid() && pointMonth.isBefore(dayjs(), 'month');
+                
+                let classList = 'roadmap-dot';
+                let goalColor = 'text-gray-800';
+
+                if (isCurrentMonth) {
+                    classList += ' current';
+                    goalColor = 'text-red-600 font-extrabold';
+                } else if (isPassed && index !== 2) { // נקודה A, B שעברה
+                    classList += ' passed';
+                    goalColor = 'text-gray-500';
+                } else if (index === 2 && isPassed) { // נקודה C (הסיום) שעברה
+                    classList += ' passed';
+                    goalColor = 'text-green-600 font-extrabold';
+                }
+
+
+                roadmapHtml += `
+                    <div class="flex-1 px-2 ${classList}">
+                        <div class="roadmap-dot-inner"></div>
+                        <p class="mt-4 text-sm font-semibold text-dark-text">${point.title}</p>
+                        <p class="text-xs text-gray-600 font-medium">${point.month}</p>
+                        <p class="text-sm mt-1 ${goalColor} font-bold">${point.goal}</p>
+                    </div>
+                `;
+            });
+
+            roadmapAbcDiv.innerHTML += roadmapHtml; 
+        }
+
+        /**
+         * פונקציית טוגל פשוטה שמופעלת דרך הרינדור מחדש
+         */
+        function handleToggle(event) {
+            const monthId = event.target.dataset.monthId;
+            const container = document.getElementById(`tasks-${monthId}`);
+            const button = event.target;
+            
+            if (!container) return;
+
+            container.classList.toggle('expanded');
+            
+            if (container.classList.contains('expanded')) {
+                button.textContent = 'הצג פחות';
+            } else {
+                button.textContent = 'הצג עוד';
+            }
+        }
+
+        /**
+         * הגדרת מאזיני אירועים לכפתורי הצג עוד/פחות
+         */
+        function setupToggleEvents() {
+            document.querySelectorAll('.toggle-tasks-btn').forEach(button => {
+                button.removeEventListener('click', handleToggle); 
+                button.addEventListener('click', handleToggle);
+            });
+        }
+        
+        /**
+         * רינדור ציר הזמן האנכי עם המשימות
+         */
+        function renderTimeline() {
+            const selectedPerson = filterSelect.value;
+            const currentMonthKey = dayjs().format(MONTH_FORMAT);
+            
+            const filteredData = selectedPerson === 'all'
+                ? currentTasksData
+                : currentTasksData.filter(item => item.person === selectedPerson);
+
+            // קיבוץ המשימות לפי חודש
+            const groupedByMonth = filteredData.reduce((acc, item) => {
+                const month = item.month;
+                if (!acc[month]) {
+                    acc[month] = [];
+                }
+                acc[month].push(item);
+                return acc;
+            }, {});
+
+            let timelineHtml = '';
+
+            if (filteredData.length === 0) {
+                timelineOutput.innerHTML = '';
+                noDataMessage.classList.remove('hidden');
+                return;
+            } else {
+                noDataMessage.classList.add('hidden');
+            }
+
+            const months = Object.keys(groupedByMonth);
+            
+            months.forEach((month) => {
+                const tasks = groupedByMonth[month];
+                // ממירים שמות חודשים לפורמט ID חוקי
+                const monthId = month.replace(/\s|%/g, '_'); 
+                const isOverflow = tasks.length > INITIAL_TASKS_DISPLAY;
+                const isCurrent = month === currentMonthKey;
+                const markerClass = isCurrent ? 'current-month-marker' : '';
+                const headerColor = isCurrent ? 'text-red-600' : 'text-primary-color';
+                const shadowClass = isCurrent ? 'shadow-2xl border-red-400' : 'shadow-lg border-primary-color/50';
+
+                // --- כותרת חודש (נקודת ציון על הציר) ---
+                timelineHtml += `
+                    <div class="relative mb-12">
+                        <div class="timeline-item-marker ${markerClass} shadow-md"></div>
+                        <div class="timeline-content bg-white p-4 rounded-xl ${shadowClass} transform hover:shadow-xl transition duration-300">
+                            <h2 class="text-xl font-bold ${headerColor} mb-3 border-b pb-2">${isCurrent ? 'כאן ועכשיו: ' : ''}${month}</h2>
+                            <div id="tasks-${monthId}" class="tasks-container ${isOverflow ? '' : 'expanded'}"> 
+                                <ul class="space-y-4 pt-2">
+                `;
+                
+                // --- רשימת המשימות בתוך החודש ---
+                tasks.forEach(task => {
+                    const personConfig = people.find(p => p.name === task.person);
+                    const personMarkerClass = personConfig ? personConfig.class : 'bg-gray-500';
+                    let statusClass = '';
+                    switch (task.status) {
+                        case 'מתוכנן': statusClass = 'status-planned'; break;
+                        case 'בעבודה': statusClass = 'status-in-progress'; break;
+                        case 'הושלם': statusClass = 'status-completed'; break;
+                        default: statusClass = 'status-planned';
+                    }
+                    
+                    // כפתור הקישור
+                    const linkButton = task.link ? `
+                        <a href="${task.link}" target="_blank" class="flex items-center text-xs font-semibold text-primary-color hover:text-blue-700 transition duration-150 border border-primary-color/50 rounded-full px-3 py-1 mr-auto shadow-sm hover:bg-blue-50">
+                            <svg class="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                            קישור
+                        </a>
+                    ` : '';
+                    
+                    timelineHtml += `
+                        <li class="p-3 bg-secondary-gray rounded-lg border border-gray-200 flex items-start space-x-3 space-x-reverse">
+                            <!-- סמן האדם -->
+                            <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0 ${personMarkerClass}"></div>
+                            
+                            <div class="flex-grow">
+                                <p class="text-base font-semibold text-gray-800">${task.task}</p>
+                                <div class="flex items-center mt-2 space-x-3 space-x-reverse text-xs text-gray-600">
+                                    <span class="flex items-center">
+                                        <svg class="w-4 h-4 ml-1 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                        <span class="font-bold">${task.person}</span>
+                                    </span>
+                                    
+                                    <span class="flex items-center">
+                                        <span class="w-2 h-2 rounded-full ml-1 ${statusClass}"></span>
+                                        <span>${task.status}</span>
+                                    </span>
+                                    
+                                    ${linkButton}
+                                </div>
+                            </div>
+                        </li>
+                    `;
+                });
+                
+                timelineHtml += `
+                                </ul>
+                            </div>
+                `;
+                
+                // כפתור הצג עוד/פחות
+                if (isOverflow) {
+                    timelineHtml += `
+                        <div class="text-center mt-4">
+                            <button class="toggle-tasks-btn text-sm font-semibold text-primary-color hover:text-blue-700 transition duration-150 py-1 px-4 rounded-full border border-primary-color/50 hover:bg-blue-50 shadow-sm" data-month-id="${monthId}">
+                                הצג עוד
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                timelineHtml += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            timelineOutput.innerHTML = timelineHtml;
+            setupToggleEvents();
+        }
+
+        /**
+         * רינדור טבלת ניהול המשימות בעמוד הניהול
+         */
+        function renderManagementTasks() {
+            let tasksHtml = `
+                <div class="hidden md:grid grid-cols-6 font-bold text-sm text-gray-500 border-b pb-2 mb-2">
+                    <div class="col-span-2">משימה</div>
+                    <div class="col-span-1">חודש</div>
+                    <div class="col-span-1">אחראי/ת</div>
+                    <div class="col-span-1">סטטוס</div>
+                    <div class="col-span-1 text-center">פעולות</div>
+                </div>
+            `;
+
+            currentTasksData.forEach(task => {
+                tasksHtml += `
+                    <div class="grid grid-cols-1 md:grid-cols-6 items-center p-3 mb-3 border md:border-b md:border-0 rounded-lg bg-gray-50 md:bg-white shadow-sm hover:bg-gray-100 transition duration-150">
+                        <!-- משימה -->
+                        <div class="col-span-2 font-medium text-gray-900 truncate mb-2 md:mb-0" title="${task.task}">${task.task}</div>
+                        
+                        <!-- חודש -->
+                        <div class="col-span-1 text-sm text-gray-600 mb-2 md:mb-0">
+                            <span class="md:hidden font-bold ml-1">חודש:</span> ${task.month}
+                        </div>
+
+                        <!-- אחראי/ת -->
+                        <div class="col-span-1 text-sm font-semibold mb-2 md:mb-0">
+                            <span class="md:hidden font-bold ml-1">אחראי/ת:</span> ${task.person}
+                        </div>
+
+                        <!-- סטטוס -->
+                        <div class="col-span-1 text-sm mb-2 md:mb-0">
+                            <span class="md:hidden font-bold ml-1">סטטוס:</span> 
+                            <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">${task.status}</span>
+                        </div>
+                        
+                        <!-- פעולות -->
+                        <div class="col-span-1 flex justify-end md:justify-center space-x-2 space-x-reverse">
+                            <button onclick="openModal(${JSON.stringify(task).replace(/"/g, '&quot;')})" 
+                                    class="text-primary-color hover:text-blue-700 p-1 rounded-full hover:bg-blue-100 transition duration-150" title="ערוך">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            </button>
+                            <button onclick="deleteTask('${task.id}')" 
+                                    class="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100 transition duration-150" title="מחק">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            tasksListManagement.innerHTML = tasksHtml;
+        }
+
+        // ==============================================
+        // 7. ניווט בין טאבים ואירועים גלובליים
+        // ==============================================
+
+        /**
+         * פונקציה לניווט בין טאבים
+         */
+        window.switchTab = function(tabName) {
+            // הסתרת כל התכנים וכיבוי ה-active מכל הכפתורים
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+            
+            // איפוס הרינדור של Roadmap כדי למנוע כפילויות לפני רינדור מחדש
+            roadmapAbcDiv.innerHTML = `<div class="roadmap-track"><div id="roadmap-progress-bar" class="roadmap-progress"></div></div>`;
+
+
+            // הצגת התוכן המתאים
+            if (tabName === 'timeline') {
+                viewTimeline.classList.remove('hidden');
+                document.getElementById('tab-timeline').classList.add('active');
+                renderTimeline(); 
+                renderRoadmap(); 
+            } else if (tabName === 'management') {
+                viewManagement.classList.remove('hidden');
+                document.getElementById('tab-management').classList.add('active');
+                renderManagementTasks();
+                populateRoadmapForm(currentRoadmapData);
+            }
+        };
+
+        // צימוד הטפסים לפונקציות שמירה
+        document.getElementById('roadmap-form').addEventListener('submit', saveRoadmap);
+        document.getElementById('add-task-form').addEventListener('submit', addTask);
+        document.getElementById('edit-task-form').addEventListener('submit', saveEditedTask);
+
+        // אתחול האפליקציה כולה
+        window.onload = initializeFirebase;
+    </script>
+</body>
+</html>

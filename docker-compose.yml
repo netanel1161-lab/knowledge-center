@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    command: gunicorn -w 4 -b 0.0.0.0:8000 app:app
+    env_file:
+      - .env
+    environment:
+      CHROMA_PERSIST_DIR: /data/chroma_db
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/data/chroma_db
+    restart: unless-stopped
+
+volumes:
+  chroma_data:

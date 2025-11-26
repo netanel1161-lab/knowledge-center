@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>l00K | תצוגת הוצאות</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF', 
+                        'lok-dark-gray': '#374151', /* כהה יותר, פחות שחור */
+                        'lok-soft-gray': '#F9FAFB', /* רקע קליל - בהיר מאוד */
+                        'lok-blue-soft': '#F0F9FF', /* גוון תכלת עדין */
+                        'lok-neutral': '#9CA3AF', 
+                        'lok-red-soft': '#FF3B30', /* דגש לקבוע */
+                        'lok-orange-soft': '#FF9500', /* דגש לשונה */
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* הגדרת משתני CSS */
+        :root {
+            --lok-primary: #007AFF;
+            --lok-blue-soft: #F0F9FF;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            color: #374151;
+            min-height: 100vh;
+            background-color: #F9FAFB;
+            position: relative; 
+            overflow-x: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* ------------------------------------- */
+        /* עיצוב הרקע הגיאומטרי (קליל) */
+        /* ------------------------------------- */
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -150px; 
+            right: 85%; 
+            width: 600px; 
+            height: 600px; 
+            border-radius: 50%;
+            background-color: var(--lok-blue-soft); 
+            opacity: 0.7; 
+            z-index: -1; 
+            filter: blur(100px); 
+        }
+
+        /* סגנון לכרטיס הוצאה - נקי */
+        .expense-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E7EB; 
+        }
+        
+        /* סגנון לכותרת קטגוריה - קו תחתון עדין */
+        .category-title {
+            position: relative;
+            font-weight: 700;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: #4B5563;
+        }
+        .category-title::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 40px;
+            height: 2px;
+            border-radius: 9999px;
+            background-color: #D1D5DB; /* קו אפור בהיר */
+        }
+        
+        /* סגנון לכרטיס הערה */
+        .note-card {
+            background-color: #F3F4F6; /* רקע אפור בהיר מאוד */
+            border-left: 3px solid #D1D5DB; /* פס אפור עדין */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .summary-card {
+            background-color: white;
+            border: 1px solid #D1D5DB;
+        }
+    </style>
+</head>
+<body class="rtl">
+
+    <!-- כותרת ראשית קבועה (Header) -->
+    <header class="w-full border-b border-gray-200 bg-white z-50 sticky top-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-start items-center">
+            
+            <a href="financial_menu.html" class="text-gray-500 hover:text-lok-primary transition-colors flex items-center text-sm ml-6 space-x-2 space-x-reverse">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1 transform rotate-180"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                חזרה לתפריט כספים
+            </a>
+            
+            <h1 class="text-xl font-bold text-lok-dark-gray pr-3 border-r-4 border-lok-primary">
+                <span class="text-lok-primary">תקציר הוצאות חודשי</span>
+                <span class="text-base font-normal text-gray-400"> | תצוגה בלבד</span>
+            </h1>
+        </div>
+    </header>
+
+    
+    <!-- תוכן ראשי -->
+    <main class="flex-grow py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+            
+            <!-- כרטיס סיכום ראשי -->
+            <div class="summary-card p-6 sm:p-8 rounded-xl shadow-lg mb-10">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between">
+                    <div>
+                        <p class="text-base font-medium text-gray-500 mb-1">
+                            סה"כ תקציב חודשי משוער
+                        </p>
+                        <p class="text-4xl font-extrabold text-lok-dark-gray flex items-center">
+                            ₪11,750.00
+                        </p>
+                    </div>
+                    <div class="mt-4 md:mt-0 text-left">
+                        <p class="text-base font-semibold text-gray-600">נובמבר 2025</p>
+                        <p class="text-sm text-gray-400">מעודכן אוטומטית</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ------------------------------------- -->
+            <!-- קטגוריה 1: הוצאות קבועות (אנכי) -->
+            <!-- ------------------------------------- -->
+            <div class="mb-10 p-6 bg-white rounded-xl shadow-md">
+                <h3 class="category-title text-3xl mb-6 text-lok-red-soft">
+                    <span class="border-b-4 border-lok-red-soft pb-1">הוצאות קבועות</span>
+                </h3>
+                
+                <!-- סה"כ קבועות - דגש צבעוני עדין -->
+                <div class="bg-lok-red-soft/5 p-4 rounded-lg mb-6 flex justify-between items-center border-r-4 border-lok-red-soft">
+                    <p class="text-lg font-bold text-lok-dark-gray">סך קבוע חודשי:</p>
+                    <p class="text-xl font-extrabold text-lok-red-soft">₪9,030</p>
+                </div>
+
+                <!-- רשימת פריטים קבועים -->
+                <div class="space-y-3">
+                    
+                    <!-- פריט 1 -->
+                    <div class="expense-card">
+                        <div>
+                            <p class="font-semibold text-base">שכר דירה (משרד)</p>
+                            <p class="text-xs text-gray-400">חיוב קבוע: 1 לכל חודש</p>
+                        </div>
+                        <span class="text-xl font-bold text-lok-dark-gray">₪8,000</span>
+                    </div>
+
+                    <!-- פריט 2 -->
+                    <div class="expense-card">
+                        <div>
+                            <p class="font-semibold text-base">שירותי אחסון (AWS)</p>
+                            <p class="text-xs text-gray-400">חיוב קבוע: 25 לכל חודש</p>
+                        </div>
+                        <span class="text-xl font-bold text-lok-dark-gray">₪450</span>
+                    </div>
+                    
+                    <!-- פריט 3 -->
+                    <div class="expense-card">
+                        <div>
+                            <p class="font-semibold text-base">ביטוח אחריות (רבעוני)</p>
+                            <p class="text-xs text-gray-400 font-medium">כולל אומדן חודשי</p>
+                        </div>
+                        <span class="text-xl font-bold text-lok-dark-gray">₪400</span>
+                    </div>
+
+                    <!-- פריט 4 -->
+                    <div class="expense-card">
+                        <div>
+                            <p class="font-semibold text-base">מנויי תוכנה (CRM)</p>
+                            <p class="text-xs text-gray-400">Salesforce</p>
+                        </div>
+                        <span class="text-xl font-bold text-lok-dark-gray">₪180</span>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <!-- ------------------------------------- -->
+            <!-- קטגוריה 2: אומדן הוצאות שונות (אנכי) -->
+            <!-- ------------------------------------- -->
+            <div class="mb-10 p-6 bg-white rounded-xl shadow-md">
+                <h3 class="category-title text-3xl mb-6 text-lok-orange-soft">
+                    <span class="border-b-4 border-lok-orange-soft pb-1">אומדן הוצאות שונות</span>
+                </h3>
+                
+                <!-- סה"כ שונות - דגש צבעוני עדין -->
+                <div class="bg-lok-orange-soft/5 p-4 rounded-lg mb-6 flex justify-between items-center border-r-4 border-lok-orange-soft">
+                    <p class="text-lg font-bold text-lok-dark-gray">סך אומדן חודשי:</p>
+                    <p class="text-xl font-extrabold text-lok-orange-soft">₪2,720</p>
+                </div>
+
+                <!-- רשימת פריטים שונים -->
+                <div class="space-y-3">
+
+                    <!-- פריט 1 -->
+                    <div class="expense-card">
+                        <div>
+                            <p class="font-semibold text-base">כיבוד וקפה</p>
+                            <p class="text-xs text-gray-400">אומדן לפי חודש קודם</p>
+                        </div>
+                        <span class="text-xl font-bold text-lok-dark-gray">₪850</span>
+                    </div>
+                    
+                    <!-- פריט 2 -->
+                    <div class="expense-card">
+                        <div>
+                            <p class="font-semibold text-base">דלק ונסיעות</p>
+                            <p class="text-xs text-gray-400">החזרי נסיעות לצוות</p>
+                        </div>
+                        <span class="text-xl font-bold text-lok-dark-gray">₪1,100</span>
+                    </div>
+
+                    <!-- פריט 3 -->
+                    <div class="expense-card">
+                        <div>
+                            <p class="font-semibold text-base">שיווק ופרסום</p>
+                            <p class="text-xs text-gray-400">השקעה מתוכננת</p>
+                        </div>
+                        <span class="text-xl font-bold text-lok-dark-gray">₪500</span>
+                    </div>
+                    
+                    <!-- פריט 4 -->
+                    <div class="expense-card">
+                        <div>
+                            <p class="font-semibold text-base">תחזוקה ואחזקה</p>
+                            <p class="text-xs text-gray-400">תיקונים קטנים</p>
+                        </div>
+                        <span class="text-xl font-bold text-lok-dark-gray">₪270</span>
+                    </div>
+
+                </div>
+            </div>
+
+            
+            <!-- ------------------------------------- -->
+            <!-- סעיף הערות חשובות -->
+            <!-- ------------------------------------- -->
+            <div class="mt-10">
+                <h3 class="category-title text-2xl mb-5 text-gray-600">
+                    <span class="border-b-2 border-gray-300 pb-1">הערות חשובות ופרטי תשלום</span>
+                </h3>
+
+                <div class="space-y-3">
+                    
+                    <!-- הערה 1: פיגמה -->
+                    <div class="note-card flex items-start space-x-3 space-x-reverse">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <p class="text-gray-700">
+                            <strong>תוכנת ה-Figma:</strong> משולם על ידי **אבירם משיח** החל מחודש ספטמבר 2024, בעלות חודשית קבועה של **120 ש"ח**.
+                        </p>
+                    </div>
+
+                    <!-- הערה 2: שרת -->
+                    <div class="note-card flex items-start space-x-3 space-x-reverse">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                        <p class="text-gray-700">
+                            <strong>השרת הראשי (XXX Cloud):</strong> משולם אוטומטית מהכרטיס העסקי של החברה. חשבונית נשלחת ישירות למייל של אסף כל 15 לחודש.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            
+            <p class="mt-16 text-center text-xs text-gray-400">
+                מסמך זה הינו לוח בקרה לצפייה בלבד. הנתונים אינם ניתנים לעריכה.
+            </p>
+        </div>
+    </main>
+    
+</body>
+</html>

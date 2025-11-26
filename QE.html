@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>LOOK – QR Tracker Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- הגדרת משתנים גלובליים – תעדכן לפי הפרויקט שלך -->
+  <script>
+    // כאן שמים את הקונפיג של Firebase כ-JSON (string)
+    // בדוגמה: ערכים ריקים. בפועל צריך לשים את מה שקיבלת מ-Firebase.
+    var __firebase_config = JSON.stringify({
+      apiKey: "",
+      authDomain: "",
+      projectId: "",
+      storageBucket: "",
+      messagingSenderId: "",
+      appId: ""
+    });
+
+    // מזהה האפליקציה בתוך Firestore – אפשר לשנות לשם שאתה משתמש בו
+    var __app_id = "look-pilot";
+
+    // אם תרצה להשתמש ב-Custom Token לאותנטיקציה – לשים כאן. אחרת אפשר להשאיר ריק.
+    var __initial_auth_token = "";
+  </script>
+</head>
+<body class="bg-gray-100">
+  <div id="root"></div>
+
+  <script type="module">
+    // React + ReactDOM
+    import React, {
+      useState,
+      useEffect,
+      useCallback,
+      useMemo
+    } from "https://esm.sh/react@18.3.1";
+    import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
+
+    // Firebase (modular)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+    import {
+      getAuth,
+      signInWithCustomToken,
+      signInAnonymously,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      setDoc,
+      addDoc,
+      onSnapshot,
+      query,
+      orderBy,
+      serverTimestamp,
+      getDoc,
+      updateDoc,
+      setLogLevel
+    } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
+
+    // Icons (lucide-react)
+    import {
+      Download,
+      Edit,
+      Barcode,
+      List,
+      Loader2,
+      Link,
+      CornerUpLeft,
+      Globe
+    } from "https://esm.sh/lucide-react@0.378.0";
+
+    // מפתח ל-Gemini (כרגע לא בשימוש)
+    const apiKey = "";
+
+    // ----------------------------------------------------------------------
+    // פונקציות עזר ל-API ומיקום
+    // ----------------------------------------------------------------------
+
+    const getGeolocationAndDevice = async () => {
+      const deviceMetadataRaw = navigator.userAgent;
+      const deviceType = /Mobi|Tablet|iPad|iPhone/.test(deviceMetadataRaw)
+        ? "Mobile"
+        : "Desktop";
+      const osName = navigator.platform || "Unknown OS";
+      const browserName = navigator.appName || "Unknown Browser";
+
+      let locationData = {
+        ip_address: "127.0.0.1",
+        city: "Localhost",
+        country: "Israel",
+        region: "Center",
+        latitude: 32.0,
+        longitude: 34.8
+      };
+
+      try {
+        const response = await fetch("https://ipapi.co/json/");
+        if (response.ok) {
+          const data = await response.json();
+          locationData = {
+            ip_address: data.ip || "N/A",
+            city: data.city || "N/A",
+            country: data.country_name || "N/A",
+            region: data.region || "N/A",
+            latitude: data.latitude || 0,
+            longitude: data.longitude || 0
+          };
+        }
+      } catch (e) {
+        console.warn(
+          "אזהרה: שגיאה באחזור מיקום גיאוגרפי דרך ipapi.co",
+          e
+        );
+      }
+
+      return {
+        ...locationData,
+        device_type: deviceType,
+        os_name: osName,
+        browser_name: browserName,
+        device_metadata_raw: deviceMetadataRaw
+      };
+    };
+
+    const seedInitialBarcodes = async (db, appId) => {
+      const barcodesCollectionRef = collection(
+        db,
+        `artifacts/${appId}/public/data/barcodes`
+      );
+      const initialBarcodes = [
+        {
+          name: "השקת מוצר חדש",
+          id_number: "PROD1001",
+          target_link:
+            "https://www.google.com/search?q=New+Product+Launch+Strategy",
+          color: "#1d4ed8",
+          borderRadius: 12,
+          landing_page_style: {
+            backgroundColor: "#3b82f6",
+            logoColor: "#ffffff",
+            logoText: "הלוגו של המוצר"
+          },
+          created_at: serverTimestamp()
+        },
+        {
+          name: "כנס תעשייה 2024",
+          id_number: "EVENT24A",
+          target_link:
+            "https://www.google.com/search?q=Trade+Show+Lead+Capture+Form",
+          color: "#059669",
+          borderRadius: 4,
+          landing_page_style: {
+            backgroundColor: "#10b981",
+            logoColor: "#1f2937",
+            logoText: "דוכן 24A"
+          },
+          created_at: serverTimestamp()
+        },
+        {
+          name: "תמיכת לקוחות - חוברת הוראות",
+          id_number: "SUPP0099",
+          target_link:
+            "https://www.google.com/search?q=Customer+Support+Manual+PDF",
+          color: "#dc2626",
+          borderRadius: 20,
+          landing_page_style: {
+            backgroundColor: "#f59e0b",
+            logoColor: "#ffffff",
+            logoText: "תמיכה מיידית"
+          },
+          created_at: serverTimestamp()
+        }
+      ];
+
+      console.log("Seeding initial 3 demo barcodes...");
+      for (const barcode of initialBarcodes) {
+        try {
+          const docRef = await addDoc(barcodesCollectionRef, barcode);
+          const realContentUrl = `${window.location.origin}/#/scan/${docRef.id}`;
+          await updateDoc(doc(db, barcodesCollectionRef.path, docRef.id), {
+            content_url: realContentUrl
+          });
+        } catch (e) {
+          console.error("שגיאה בשמירת ברקוד דמו:", e);
+        }
+      }
+    };
+
+    // ----------------------------------------------------------------------
+    // קומפוננטת QR (דמו)
+    // ----------------------------------------------------------------------
+
+    const QRCodeDisplay = ({
+      value,
+      size = 256,
+      color = "#000000",
+      borderRadius = 0,
+      style
+    }) => {
+      const uniqueId = `qr-${Date.now()}`;
+
+      return (
+        <div
+          id={uniqueId}
+          className="p-4 bg-white shadow-xl rounded-xl"
+          style={{ ...style, borderRadius: `${borderRadius}px` }}
+        >
+          <svg
+            width={size}
+            height={size}
+            viewBox="0 0 256 256"
+            style={{ backgroundColor: "#fff" }}
+          >
+            <rect x="0" y="0" width="256" height="256" fill="#fff" />
+            <rect x="10" y="10" width="40" height="40" fill={color} />
+            <rect x="206" y="10" width="40" height="40" fill={color} />
+            <rect x="10" y="206" width="40" height="40" fill={color} />
+            <rect
+              x="60"
+              y="60"
+              width="136"
+              height="136"
+              fill={color}
+              opacity="0.1"
+            />
+            <text
+              x="128"
+              y="138"
+              fontSize="24"
+              fill={color}
+              textAnchor="middle"
+              style={{ userSelect: "none" }}
+            >
+              QR
+            </text>
+          </svg>
+          <p className="text-center text-xs mt-2 text-gray-500 truncate">
+            {value}
+          </p>
+        </div>
+      );
+    };
+
+    // ----------------------------------------------------------------------
+    // אפליקציה ראשית
+    // ----------------------------------------------------------------------
+
+    const App = () => {
+      const [db, setDb] = useState(null);
+      const [auth, setAuth] = useState(null);
+      const [userId, setUserId] = useState(null);
+      const [isAuthReady, setIsAuthReady] = useState(false);
+      const [view, setView] = useState("generator");
+      const [selectedBarcode, setSelectedBarcode] = useState(null);
+      const [barcodes, setBarcodes] = useState([]);
+      const [scanId, setScanId] = useState(null);
+
+      useEffect(() => {
+        try {
+          const firebaseConfig =
+            typeof __firebase_config !== "undefined"
+              ? JSON.parse(__firebase_config)
+              : {};
+          const app = initializeApp(firebaseConfig);
+          const firestoreDb = getFirestore(app);
+          setLogLevel("debug");
+          const firebaseAuth = getAuth(app);
+
+          setDb(firestoreDb);
+          setAuth(firebaseAuth);
+
+          const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+            const currentUserId = user?.uid || crypto.randomUUID();
+            setUserId(currentUserId);
+            setIsAuthReady(true);
+          });
+
+          const attemptAuth = async () => {
+            try {
+              if (
+                typeof __initial_auth_token !== "undefined" &&
+                __initial_auth_token
+              ) {
+                await signInWithCustomToken(firebaseAuth, __initial_auth_token);
+              } else {
+                await signInAnonymously(firebaseAuth);
+              }
+            } catch (error) {
+              console.error("שגיאת אותנטיקציה:", error);
+              setUserId(crypto.randomUUID());
+              setIsAuthReady(true);
+            }
+          };
+          attemptAuth();
+
+          return () => unsubscribe();
+        } catch (e) {
+          console.error("שגיאה באתחול Firebase:", e);
+        }
+      }, []);
+
+      useEffect(() => {
+        if (!isAuthReady || !db || !userId) return;
+
+        const appId =
+          typeof __app_id !== "undefined" ? __app_id : "default-app-id";
+        const collectionPath = `artifacts/${appId}/public/data/barcodes`;
+        console.log(`מנסה לגשת לנתיב Firestore: ${collectionPath}`);
+
+        const barcodesCollectionRef = collection(db, collectionPath);
+        const q = query(barcodesCollectionRef);
+
+        const unsubscribe = onSnapshot(
+          q,
+          async (snapshot) => {
+            const fetchedBarcodes = snapshot.docs.map((docSnap) => ({
+              id: docSnap.id,
+              ...docSnap.data()
+            }));
+
+            if (fetchedBarcodes.length === 0) {
+              const shouldSeed =
+                localStorage.getItem("seeded_barcodes") !== "true";
+
+              if (shouldSeed) {
+                await seedInitialBarcodes(db, appId);
+                localStorage.setItem("seeded_barcodes", "true");
+                return;
+              }
+            }
+
+            fetchedBarcodes.sort(
+              (a, b) =>
+                (b.created_at?.toMillis() || 0) -
+                (a.created_at?.toMillis() || 0)
+            );
+            setBarcodes(fetchedBarcodes);
+          },
+          (error) => {
+            console.error(
+              `שגיאה בהאזנה לברקודים בנתיב ${collectionPath}:`,
+              error
+            );
+            console.warn(
+              "שגיאת הרשאות Firestore! ודא שכללי האבטחה מאפשרים קריאה וכתיבה לנתיב הזה."
+            );
+          }
+        );
+
+        return () => unsubscribe();
+      }, [isAuthReady, db, userId]);
+
+      useEffect(() => {
+        const path = window.location.hash.substring(1);
+        if (path.startsWith("/scan/")) {
+          const id = path.split("/scan/")[1];
+          if (id) {
+            setView("scan");
+            setScanId(id);
+          }
+        } else if (view === "scan") {
+          setView("generator");
+        }
+      }, [view]);
+
+      const goToView = (newView, barcode = null) => {
+        if (newView === "scan") return;
+        setSelectedBarcode(barcode);
+        setView(newView);
+        window.location.hash =
+          newView === "generator"
+            ? ""
+            : newView === "data"
+            ? "/data"
+            : `/editor/${barcode?.id || ""}`;
+      };
+
+      // ------------------------------------------------------------------
+      // דף סריקה
+      // ------------------------------------------------------------------
+
+      const ScanLandingPage = useCallback(() => {
+        const [status, setStatus] = useState("loading");
+        const [barcodeData, setBarcodeData] = useState(null);
+        const [linkTarget, setLinkTarget] = useState(null);
+
+        useEffect(() => {
+          if (!scanId || !db || status === "success") return;
+
+          const logScan = async (data) => {
+            const scanData = {
+              ...data,
+              client_scanned_at: serverTimestamp()
+            };
+
+            try {
+              const scanRef = collection(
+                db,
+                `artifacts/${
+                  typeof __app_id !== "undefined" ? __app_id : "default-app-id"
+                }/public/data/barcodes/${scanId}/scans`
+              );
+              await addDoc(scanRef, scanData);
+              console.log("נתוני סריקה נשמרו בהצלחה.");
+            } catch (e) {
+              console.error("שגיאה בשמירת נתוני סריקה:", e);
+            }
+          };
+
+          const fetchData = async () => {
+            try {
+              const appId =
+                typeof __app_id !== "undefined" ? __app_id : "default-app-id";
+              const docRef = doc(
+                db,
+                `artifacts/${appId}/public/data/barcodes`,
+                scanId
+              );
+              const docSnap = await getDoc(docRef);
+
+              if (docSnap.exists()) {
+                const data = docSnap.data();
+                setBarcodeData(data);
+                setLinkTarget(data.target_link);
+
+                const geoAndDeviceData = await getGeolocationAndDevice();
+                await logScan(geoAndDeviceData);
+
+                setStatus("success");
+
+                setTimeout(() => {
+                  window.location.href = data.target_link;
+                }, 2000);
+              } else {
+                setStatus("error");
+                console.error("הברקוד לא נמצא.");
+              }
+            } catch (e) {
+              setStatus("error");
+              console.error("שגיאה באחזור נתוני ברקוד:", e);
+            }
+          };
+          fetchData();
+        }, [db, scanId, status]);
+
+        if (status === "error") {
+          return (
+            <div className="flex flex-col items-center justify-center h-screen bg-red-100 text-red-800 p-8">
+              <h1 className="text-3xl font-bold mb-4">שגיאה!</h1>
+              <p>הברקוד שנסרק אינו חוקי או לא נמצא במערכת.</p>
+            </div>
+          );
+        }
+
+        if (status === "loading") {
+          const style =
+            barcodeData?.landing_page_style || {
+              backgroundColor: "#3b82f6",
+              logoColor: "#ffffff"
+            };
+          const bgColor = style.backgroundColor || "#3b82f6";
+          const logoColor = style.logoColor || "#ffffff";
+          const corners = barcodeData?.borderRadius || 8;
+
+          return (
+            <div
+              className="flex flex-col items-center justify-center h-screen"
+              style={{ backgroundColor: bgColor }}
+            >
+              <div
+                className="bg-white p-10 rounded-xl shadow-2xl transition-transform duration-500 animate-pulse"
+                style={{ borderRadius: `${corners}px` }}
+              >
+                <div className="flex items-center justify-center mb-6">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="64"
+                    height="64"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke={logoColor}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="w-16 h-16"
+                  >
+                    <rect
+                      x="3"
+                      y="3"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <line x1="16" y1="8" x2="16.01" y2="8"></line>
+                  </svg>
+                </div>
+                <p className="text-xl text-center text-gray-700">
+                  במעבר לקישור המבוקש...
+                </p>
+                <div className="flex justify-center mt-4">
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                </div>
+              </div>
+              <p className="text-sm text-white mt-4">
+                איסוף נתוני מיקום ומכשיר מתבצע ברקע.
+              </p>
+            </div>
+          );
+        }
+
+        return (
+          <div className="flex flex-col items-center justify-center h-screen bg-green-100 text-green-800 p-8">
+            <h1 className="text-3xl font-bold mb-4">הסריקה נרשמה בהצלחה!</h1>
+            <p>
+              מנתב ל:{" "}
+              <a
+                href={linkTarget}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline font-mono"
+              >
+                {linkTarget}
+              </a>
+            </p>
+            <p className="mt-4">מעבר אוטומטי מתבצע...</p>
+          </div>
+        );
+      }, [scanId, db]);
+
+      // ------------------------------------------------------------------
+      // Generator
+      // ------------------------------------------------------------------
+
+      const BarcodeGenerator = () => {
+        const [barcodeName, setBarcodeName] = useState("");
+        const [idNumber, setIdNumber] = useState("");
+        const [barcodeColor, setBarcodeColor] = useState("#000000");
+        const [borderRadius, setBorderRadius] = useState(8);
+        const [isLoading, setIsLoading] = useState(false);
+        const [message, setMessage] = useState("");
+
+        const contentUrl = useMemo(() => {
+          const uniqueIdMock = `demo-${idNumber || "000"}`;
+          return `${window.location.origin}/#/scan/${uniqueIdMock}`;
+        }, [idNumber]);
+
+        const handleGenerate = async () => {
+          if (!db || !barcodeName || !idNumber) {
+            setMessage('אנא מלא את "שם לברקוד" ו"מס ל.ז"');
+            return;
+          }
+          setIsLoading(true);
+          setMessage("");
+
+          const newBarcode = {
+            name: barcodeName,
+            id_number: idNumber,
+            target_link:
+              "https://www.google.com/search?q=" +
+              encodeURIComponent(barcodeName),
+            color: barcodeColor,
+            borderRadius: borderRadius,
+            landing_page_style: {
+              backgroundColor: "#3b82f6",
+              logoColor: "#ffffff",
+              logoText: barcodeName
+            },
+            created_at: serverTimestamp()
+          };
+
+          try {
+            const appId =
+              typeof __app_id !== "undefined" ? __app_id : "default-app-id";
+            const barcodesCollectionRef = collection(
+              db,
+              `artifacts/${appId}/public/data/barcodes`
+            );
+
+            const docRef = await addDoc(barcodesCollectionRef, newBarcode);
+
+            const realContentUrl = `${window.location.origin}/#/scan/${docRef.id}`;
+            await updateDoc(
+              doc(db, barcodesCollectionRef.path, docRef.id),
+              {
+                content_url: realContentUrl
+              }
+            );
+
+            setMessage(`ברקוד נוצר ונשמר בהצלחה! ID: ${docRef.id}`);
+            setBarcodeName("");
+            setIdNumber("");
+          } catch (error) {
+            console.error("שגיאה ביצירת ברקוד:", error);
+            setMessage("שגיאה ביצירת ברקוד. אנא נסה שוב.");
+          } finally {
+            setIsLoading(false);
+          }
+        };
+
+        const downloadBarcode = (format) => {
+          setMessage(
+            `בקשת הורדה בפורמט ${format} – כרגע יש רק הדגמה, אפשר לשמור כתבנית דרך צילום מסך/קליק ימני.`
+          );
+        };
+
+        return (
+          <div className="flex flex-col lg:flex-row gap-8 p-6 lg:p-10 bg-gray-50 min-h-screen">
+            <div className="lg:w-1/3 bg-white p-6 rounded-xl shadow-lg h-fit order-2 lg:order-1">
+              <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <Barcode className="w-6 h-6 ml-2" />
+                יצירת ברקוד חדש
+              </h2>
+
+              <div className="space-y-4">
+                <label className="block">
+                  <span className="text-gray-700 font-medium">
+                    שם לברקוד (לצורך זיהוי)
+                  </span>
+                  <input
+                    type="text"
+                    value={barcodeName}
+                    onChange={(e) => setBarcodeName(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="שם הקמפיין / המוצר"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-gray-700 font-medium">
+                    מס' זיהוי (תוכן הברקוד)
+                  </span>
+                  <input
+                    type="text"
+                    value={idNumber}
+                    onChange={(e) => setIdNumber(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="לדוגמה: 12345678"
+                  />
+                </label>
+
+                <h3 className="text-lg font-semibold pt-4 border-t mt-6">
+                  אפשרויות עיצוב
+                </h3>
+
+                <label className="block">
+                  <span className="text-gray-700 font-medium">צבע ברקוד</span>
+                  <div className="flex items-center gap-4 mt-1">
+                    <input
+                      type="color"
+                      value={barcodeColor}
+                      onChange={(e) => setBarcodeColor(e.target.value)}
+                      className="w-10 h-10 p-0 border-0 rounded-md cursor-pointer"
+                    />
+                    <span className="text-gray-500">{barcodeColor}</span>
+                  </div>
+                </label>
+
+                <label className="block">
+                  <span className="text-gray-700 font-medium">
+                    עיגול פינות (רדיוס בפיקסלים)
+                  </span>
+                  <div className="flex items-center gap-4 mt-1">
+                    <input
+                      type="range"
+                      min="0"
+                      max="20"
+                      value={borderRadius}
+                      onChange={(e) =>
+                        setBorderRadius(parseInt(e.target.value, 10))
+                      }
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg"
+                    />
+                    <span className="text-gray-500 w-8 text-right">
+                      {borderRadius}
+                    </span>
+                  </div>
+                </label>
+              </div>
+
+              <button
+                onClick={handleGenerate}
+                disabled={isLoading || !barcodeName || !idNumber}
+                className="w-full mt-6 flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition duration-150"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 ml-2 animate-spin" />
+                ) : (
+                  <Barcode className="w-5 h-5 ml-2" />
+                )}
+                {isLoading ? "יוצר..." : "יצירה ושמירה ב-DB"}
+              </button>
+
+              {message && (
+                <p
+                  className={`mt-4 text-center text-sm p-2 rounded-md ${
+                    message.includes("שגיאה")
+                      ? "bg-red-100 text-red-700"
+                      : "bg-green-100 text-green-700"
+                  }`}
+                >
+                  {message}
+                </p>
+              )}
+            </div>
+
+            <div className="lg:w-2/3 bg-white p-6 rounded-xl shadow-lg order-1 lg:order-2">
+              <h2 className="text-2xl font-bold mb-6 text-gray-800">
+                תצוגה מקדימה של הברקוד
+              </h2>
+              <div
+                id="qr-preview-container"
+                className="flex flex-col items-center justify-center p-4"
+              >
+                <QRCodeDisplay
+                  value={contentUrl}
+                  color={barcodeColor}
+                  borderRadius={borderRadius}
+                  style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                />
+                <div className="mt-4 text-sm text-gray-600 text-center max-w-sm break-all">
+                  <span className="font-bold">הקישור המוטמע (Demo):</span>
+                  <br />
+                  {contentUrl}
+                </div>
+              </div>
+
+              <div className="flex justify-center gap-4 mt-8 pt-4 border-t">
+                <button
+                  onClick={() => downloadBarcode("PNG")}
+                  className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 transition duration-150"
+                >
+                  <Download className="w-4 h-4 ml-2" />
+                  הורדת PNG
+                </button>
+                <button
+                  onClick={() => downloadBarcode("PDF")}
+                  className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition duration-150"
+                >
+                  <Download className="w-4 h-4 ml-2" />
+                  הורדת PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      // ------------------------------------------------------------------
+      // Dashboard
+      // ------------------------------------------------------------------
+
+      const BarcodeDashboard = () => {
+        const simulateScan = async (barcode) => {
+          window.location.hash = `/scan/${barcode.id}`;
+        };
+
+        return (
+          <div className="p-6 lg:p-10 bg-gray-50 min-h-screen">
+            <h2 className="text-3xl font-bold mb-8 text-gray-800 flex items-center">
+              <List className="w-7 h-7 ml-3" />
+              דאטה וניהול ברקודים
+            </h2>
+            <p className="mb-6 text-gray-600">
+              <span className="font-bold">מזהה משתמש נוכחי:</span>{" "}
+              {userId || "...טוען"} (חשוב לניהול נתונים ב-Firestore)
+            </p>
+
+            {barcodes.length === 0 ? (
+              <div className="text-center p-12 bg-white rounded-xl shadow-lg">
+                <p className="text-xl text-gray-600">
+                  עדיין אין ברקודים. אנא צור אחד במסך היצירה.
+                </p>
+                <button
+                  onClick={() => goToView("generator")}
+                  className="mt-6 flex items-center mx-auto px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition duration-150"
+                >
+                  <CornerUpLeft className="w-5 h-5 ml-2" />
+                  חזרה ליצירת ברקוד
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {barcodes.map((barcode) => (
+                  <BarcodeItem
+                    key={barcode.id}
+                    barcode={barcode}
+                    goToView={goToView}
+                    db={db}
+                    simulateScan={simulateScan}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      const BarcodeItem = ({ barcode, goToView, db, simulateScan }) => {
+        const [scanCount, setScanCount] = useState(0);
+        const [latestScan, setLatestScan] = useState(null);
+        const [isExpanded, setIsExpanded] = useState(false);
+        const [scans, setScans] = useState([]);
+
+        useEffect(() => {
+          if (!db || !barcode.id) return;
+          const appId =
+            typeof __app_id !== "undefined" ? __app_id : "default-app-id";
+          const scansRef = collection(
+            db,
+            `artifacts/${appId}/public/data/barcodes/${barcode.id}/scans`
+          );
+
+          const q = query(scansRef);
+
+          const unsubscribe = onSnapshot(
+            q,
+            (snapshot) => {
+              const fetchedScans = snapshot.docs.map((docSnap) => ({
+                id: docSnap.id,
+                ...docSnap.data()
+              }));
+
+              fetchedScans.sort(
+                (a, b) =>
+                  (b.client_scanned_at?.toMillis() || 0) -
+                  (a.client_scanned_at?.toMillis() || 0)
+              );
+
+              setScanCount(fetchedScans.length);
+              setLatestScan(fetchedScans[0]);
+              setScans(fetchedScans);
+            },
+            (error) => {
+              console.error(
+                `שגיאה בהאזנה לסריקות עבור ${barcode.id}:`,
+                error
+              );
+            }
+          );
+
+          return () => unsubscribe();
+        }, [db, barcode.id]);
+
+        const formatTimestamp = (timestamp) => {
+          if (!timestamp) return "טרם נסרק";
+          const date = timestamp.toDate
+            ? timestamp.toDate()
+            : new Date(timestamp);
+          return date.toLocaleString("he-IL", {
+            dateStyle: "short",
+            timeStyle: "medium"
+          });
+        };
+
+        const ScanDetailsTable = ({ scan, index }) => (
+          <div className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
+            <h4 className="font-bold text-lg mb-2 text-blue-700">
+              סריקה {index + 1} -{" "}
+              {formatTimestamp(scan.client_scanned_at || scan.created_at)}
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-sm">
+              {Object.entries(scan)
+                .filter(
+                  ([key]) =>
+                    key !== "id" &&
+                    key !== "content_url" &&
+                    key !== "target_link"
+                )
+                .map(([key, value]) => (
+                  <div key={key} className="flex flex-col">
+                    <span className="text-gray-500 font-medium">{key}</span>
+                    <span className="font-mono text-gray-800 break-all">
+                      {value?.toDate ? formatTimestamp(value) : String(value)}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          </div>
+        );
+
+        return (
+          <div className="bg-white p-6 rounded-xl shadow-lg border-r-4 border-blue-500 transition hover:shadow-xl">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
+              <div className="lg:w-1/2 mb-4 lg:mb-0">
+                <h3 className="text-xl font-bold text-gray-900">
+                  {barcode.name}
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  מזהה: <span className="font-mono">{barcode.id}</span>
+                </p>
+                <p className="text-sm text-gray-500">
+                  נוצר: {formatTimestamp(barcode.created_at)}
+                </p>
+                <p className="text-sm font-semibold mt-2 flex items-center">
+                  <Link className="w-4 h-4 ml-1 text-blue-500" />
+                  קישור מאחר:{" "}
+                  <span className="font-mono text-blue-600 truncate ml-1">
+                    {barcode.target_link}
+                  </span>
+                </p>
+              </div>
+
+              <div className="lg:w-1/2 flex flex-wrap items-center justify-start lg:justify-end gap-3">
+                <div className="text-center p-2 rounded-md bg-blue-50">
+                  <p className="text-xs text-gray-500">סריקות</p>
+                  <p className="text-lg font-bold text-blue-700">
+                    {scanCount}
+                  </p>
+                </div>
+                <div className="text-center p-2 rounded-md bg-gray-50">
+                  <p className="text-xs text-gray-500">סריקה אחרונה</p>
+                  <p className="text-sm font-semibold text-gray-700">
+                    {formatTimestamp(latestScan?.client_scanned_at)}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => goToView("editor", barcode)}
+                  className="flex items-center px-3 py-2 border border-blue-600 text-sm font-medium rounded-md text-blue-600 hover:bg-blue-50 transition duration-150"
+                >
+                  <Edit className="w-4 h-4 ml-2" />
+                  עריכת דף מעבר
+                </button>
+                <button
+                  onClick={() => simulateScan(barcode)}
+                  className="flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-500 hover:bg-green-600 transition duration-150"
+                >
+                  <Globe className="w-4 h-4 ml-2" />
+                  בדיקת סריקה (Demo)
+                </button>
+                <button
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 transition duration-150"
+                >
+                  {isExpanded ? "צמצום נתונים" : "הצגת נתוני סריקה"}
+                </button>
+              </div>
+            </div>
+
+            {isExpanded && (
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <h4 className="text-xl font-bold mb-4 text-gray-800">
+                  דאטה מלאה על הסריקות ({scanCount})
+                </h4>
+                {scans.length === 0 ? (
+                  <p className="text-gray-500">
+                    טרם נרשמו סריקות עבור ברקוד זה.
+                  </p>
+                ) : (
+                  scans.map((scan, index) => (
+                    <ScanDetailsTable key={scan.id} scan={scan} index={index} />
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      // ------------------------------------------------------------------
+      // Landing Page Editor
+      // ------------------------------------------------------------------
+
+      const LandingPageEditor = () => {
+        if (!selectedBarcode) {
+          return (
+            <div className="flex flex-col items-center justify-center p-12 bg-white rounded-xl shadow-lg">
+              <p className="text-xl text-red-600">
+                שגיאה: לא נבחר ברקוד לעריכה.
+              </p>
+              <button
+                onClick={() => goToView("data")}
+                className="mt-6 flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+              >
+                <CornerUpLeft className="w-5 h-5 ml-2" />
+                חזרה לניהול
+              </button>
+            </div>
+          );
+        }
+
+        const [targetLink, setTargetLink] = useState(
+          selectedBarcode.target_link
+        );
+        const [logoColor, setLogoColor] = useState(
+          selectedBarcode.landing_page_style.logoColor || "#ffffff"
+        );
+        const [backgroundColor, setBackgroundColor] = useState(
+          selectedBarcode.landing_page_style.backgroundColor || "#3b82f6"
+        );
+        const [logoText, setLogoText] = useState(
+          selectedBarcode.landing_page_style.logoText || selectedBarcode.name
+        );
+        const [isLoading, setIsLoading] = useState(false);
+        const [message, setMessage] = useState("");
+
+        const handleSave = async () => {
+          if (!db || !selectedBarcode || !targetLink) return;
+          setIsLoading(true);
+          setMessage("");
+
+          const appId =
+            typeof __app_id !== "undefined" ? __app_id : "default-app-id";
+          const barcodeRef = doc(
+            db,
+            `artifacts/${appId}/public/data/barcodes`,
+            selectedBarcode.id
+          );
+
+          try {
+            await updateDoc(barcodeRef, {
+              target_link: targetLink,
+              landing_page_style: {
+                logoColor: logoColor,
+                backgroundColor: backgroundColor,
+                logoText: logoText
+              }
+            });
+            setMessage("דף המעבר עודכן בהצלחה!");
+
+            setSelectedBarcode((prev) => ({
+              ...prev,
+              target_link: targetLink,
+              landing_page_style: { logoColor, backgroundColor, logoText }
+            }));
+          } catch (error) {
+            console.error("שגיאה בעדכון דף המעבר:", error);
+            setMessage("שגיאה בעדכון. אנא נסה שוב.");
+          } finally {
+            setIsLoading(false);
+          }
+        };
+
+        const PreviewComponent = () => (
+          <div
+            className="p-8 shadow-xl rounded-xl w-full max-w-sm mx-auto"
+            style={{
+              backgroundColor: backgroundColor,
+              borderRadius: `${selectedBarcode.borderRadius}px`
+            }}
+          >
+            <div className="flex items-center justify-center mb-6">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="80"
+                height="80"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={logoColor}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-16 h-16"
+              >
+                <rect
+                  x="3"
+                  y="3"
+                  width="18"
+                  height="18"
+                  rx="2"
+                  ry="2"
+                ></rect>
+                <line x1="16" y1="8" x2="16.01" y2="8"></line>
+              </svg>
+            </div>
+            <h3 className="text-xl text-center font-bold" style={{ color: logoColor }}>
+              {logoText}
+            </h3>
+            <p
+              className="text-center mt-2 text-sm"
+              style={{ color: logoColor }}
+            >
+              מעבר אוטומטי ל{" "}
+              <span className="font-mono truncate inline-block max-w-[80%] align-middle">
+                {targetLink}
+              </span>
+            </p>
+            <p
+              className="text-center text-xs mt-4"
+              style={{ color: logoColor, opacity: 0.7 }}
+            >
+              מזהה ברקוד: {selectedBarcode.id}
+            </p>
+          </div>
+        );
+
+        return (
+          <div className="flex flex-col lg:flex-row gap-8 p-6 lg:p-10 bg-gray-50 min-h-screen">
+            <div className="lg:w-1/2 bg-white p-6 rounded-xl shadow-lg h-fit">
+              <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <Edit className="w-6 h-6 ml-2" />
+                עריכת דף מעבר:{" "}
+                <span className="text-blue-600 mr-1">
+                  {selectedBarcode?.name}
+                </span>
+              </h2>
+
+              <div className="mb-6 pb-4 border-b">
+                <h3 className="text-lg font-semibold flex items-center mb-3">
+                  <Link className="w-4 h-4 ml-2 text-red-500" />
+                  שינוי "הקישור המאחר"
+                </h3>
+                <label className="block">
+                  <span className="text-gray-700 font-medium">
+                    כתובת URL חדשה
+                  </span>
+                  <input
+                    type="url"
+                    value={targetLink}
+                    onChange={(e) => setTargetLink(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 text-red-700 font-mono"
+                    placeholder="https://your-final-destination.com"
+                  />
+                </label>
+              </div>
+
+              <h3 className="text-lg font-semibold mb-3 flex items-center">
+                <Edit className="w-4 h-4 ml-2 text-blue-500" />
+                אפשרויות עיצוב לדף המעבר
+              </h3>
+
+              <div className="space-y-4">
+                <label className="block">
+                  <span className="text-gray-700 font-medium">
+                    כותרת דף המעבר
+                  </span>
+                  <input
+                    type="text"
+                    value={logoText}
+                    onChange={(e) => setLogoText(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="לוגו או כותרת ראשית"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-gray-700 font-medium">
+                    צבע רקע דף המעבר
+                  </span>
+                  <div className="flex items-center gap-4 mt-1">
+                    <input
+                      type="color"
+                      value={backgroundColor}
+                      onChange={(e) => setBackgroundColor(e.target.value)}
+                      className="w-10 h-10 p-0 border-0 rounded-md cursor-pointer"
+                    />
+                    <span className="text-gray-500">{backgroundColor}</span>
+                  </div>
+                </label>
+
+                <label className="block">
+                  <span className="text-gray-700 font-medium">
+                    צבע לוגו/טקסט ראשי
+                  </span>
+                  <div className="flex items-center gap-4 mt-1">
+                    <input
+                      type="color"
+                      value={logoColor}
+                      onChange={(e) => setLogoColor(e.target.value)}
+                      className="w-10 h-10 p-0 border-0 rounded-md cursor-pointer"
+                    />
+                    <span className="text-gray-500">{logoColor}</span>
+                  </div>
+                </label>
+              </div>
+
+              <button
+                onClick={handleSave}
+                disabled={isLoading || !targetLink}
+                className="w-full mt-8 flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 transition duration-150"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 ml-2 animate-spin" />
+                ) : (
+                  <Edit className="w-5 h-5 ml-2" />
+                )}
+                {isLoading ? "שומר..." : "שמור שינויים"}
+              </button>
+
+              <button
+                onClick={() => goToView("data")}
+                className="w-full mt-3 flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition duration-150"
+              >
+                <CornerUpLeft className="w-5 h-5 ml-2" />
+                חזרה לדאטה וניהול
+              </button>
+
+              {message && (
+                <p
+                  className={`mt-4 text-center text-sm p-2 rounded-md ${
+                    message.includes("שגיאה")
+                      ? "bg-red-100 text-red-700"
+                      : "bg-green-100 text-green-700"
+                  }`}
+                >
+                  {message}
+                </p>
+              )}
+            </div>
+
+            <div className="lg:w-1/2 bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center">
+              <h2 className="text-2xl font-bold mb-6 text-gray-800">
+                תצוגה מקדימה של דף המעבר
+              </h2>
+              <PreviewComponent />
+            </div>
+          </div>
+        );
+      };
+
+      // ------------------------------------------------------------------
+      // Render ראשי
+      // ------------------------------------------------------------------
+
+      if (!isAuthReady) {
+        return (
+          <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <p className="mr-3 text-lg font-medium text-gray-700">
+              טוען מערכת...
+            </p>
+          </div>
+        );
+      }
+
+      const renderContent = () => {
+        if (view === "scan" && scanId) {
+          return <ScanLandingPage />;
+        }
+
+        const Header = () => (
+          <header className="bg-white shadow-md">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center h-16">
+                <h1 className="text-2xl font-extrabold text-blue-600 flex items-center">
+                  <Barcode className="w-6 h-6 ml-2" />
+                  מערכת QR Tracker Demo
+                </h1>
+                <nav className="flex space-x-4 space-x-reverse">
+                  <button
+                    onClick={() => goToView("generator")}
+                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition duration-150 ${
+                      view === "generator"
+                        ? "bg-blue-100 text-blue-700 font-semibold"
+                        : "text-gray-500 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Barcode className="w-5 h-5 ml-2" />
+                    יצירת ברקוד
+                  </button>
+                  <button
+                    onClick={() => goToView("data")}
+                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition duration-150 ${
+                      view === "data" || view === "editor"
+                        ? "bg-blue-100 text-blue-700 font-semibold"
+                        : "text-gray-500 hover:bg-gray-50"
+                    }`}
+                  >
+                    <List className="w-5 h-5 ml-2" />
+                    דאטה וניהול
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </header>
+        );
+
+        return (
+          <div className="min-h-screen bg-gray-100 font-sans" dir="rtl">
+            <Header />
+            <main>
+              <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                {view === "generator" && <BarcodeGenerator />}
+                {view === "data" && <BarcodeDashboard />}
+                {view === "editor" && <LandingPageEditor />}
+              </div>
+            </main>
+          </div>
+        );
+      };
+
+      return renderContent();
+    };
+
+    const rootElement = document.getElementById("root");
+    const root = createRoot(rootElement);
+    root.render(<App />);
+  </script>
+</body>
+</html>

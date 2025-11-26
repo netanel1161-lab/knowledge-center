@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מסמך סיכום פיילוט לוק - נובמבר–דצמבר 2025</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Heebo Font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-turquoise': '#00CCFF', // LOK Primary Color
+                        'lok-dark': '#10172A', // Dark Navy Background
+                        'lok-secondary-dark': '#1E293B', // Slightly lighter dark for cards
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base styling for the document-like feel */
+        body {
+            background-color: #10172A; /* lok-dark */
+            font-family: 'Heebo', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* General styling for soft entrance animation */
+        .animate-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        /* Class added by JS to start animation */
+        .animate-in.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Subtle glow for accents */
+        .text-lok-turquoise {
+            text-shadow: 0 0 5px rgba(0, 204, 255, 0.5);
+        }
+
+        /* Hover effect for interactive elements (cards) */
+        .card-hover:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 204, 255, 0.15);
+        }
+        .card-hover {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Custom progress bar styles */
+        .progress-bar-container {
+            height: 10px;
+            background-color: #334155;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #00CCFF;
+            transition: width 1s ease-out;
+        }
+
+    </style>
+</head>
+<body class="text-gray-100 antialiased">
+
+    <!-- Main Content Container (Simulating PDF width) -->
+    <main class="max-w-4xl mx-auto p-6 md:p-12 space-y-20">
+
+        <!-- Logo and Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center pb-10 border-b border-lok-secondary-dark animate-in">
+            <div class="flex items-center space-x-2 space-x-reverse">
+                <!-- Using the uploaded logo as a data URI placeholder -->
+                <img src="LOGO-01.png" alt="לוגו לוק" class="h-10 w-auto">
+                <span class="text-xl font-bold text-gray-400 mr-4">| מסמך פנימי</span>
+            </div>
+            <p class="text-sm text-gray-400 mt-4 md:mt-0">תאריך יצירה: 10 נובמבר 2025</p>
+        </header>
+
+        <!-- 1. Hero Section -->
+        <section class="animate-in" data-delay="0">
+            <h1 class="text-5xl font-extrabold text-lok-turquoise mb-4 leading-snug">
+                פיילוט לוק – נובמבר–דצמבר 2025
+            </h1>
+            <p class="text-2xl font-light text-gray-300 mb-6">
+                מטרת הפיילוט: לבדוק את רמת האינטראקציה והאפקטיביות של שטחי הפרסום שלנו.
+            </p>
+            <blockquote class="border-r-4 border-lok-turquoise pr-4 my-6 italic text-gray-400 text-lg">
+                המטרה היא להבין האם יש הצדקה להמשך פיתוח מודל פרסום אינטראקטיבי לעומת מיתוגי בלבד.
+            </blockquote>
+            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-8 sm:space-x-reverse text-sm font-medium pt-4">
+                <span class="text-lok-turquoise">התחלה: <span class="font-bold text-white">15/11/25</span></span>
+                <span class="text-lok-turquoise">סיום משוער: <span class="font-bold text-white">15/12/25</span></span>
+            </div>
+        </section>
+
+        <!-- 2. Phases and Status Checklist -->
+        <section class="animate-in" data-delay="100">
+            <h2 class="text-3xl font-bold mb-6 text-gray-200 border-b border-gray-700 pb-2">שלבים מרכזיים ומצב נוכחי</h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+                <!-- Checkmark Component -->
+                <div class="p-4 bg-lok-secondary-dark rounded-xl shadow-lg flex flex-col items-center card-hover">
+                    <span class="text-2xl mb-2">✅</span>
+                    <span class="text-sm font-medium">גיוס רכבים</span>
+                </div>
+                <div class="p-4 bg-lok-secondary-dark rounded-xl shadow-lg flex flex-col items-center card-hover">
+                    <span class="text-2xl mb-2">✅</span>
+                    <span class="text-sm font-medium">הכנת גרפיקות</span>
+                </div>
+                <div class="p-4 bg-lok-secondary-dark rounded-xl shadow-lg flex flex-col items-center card-hover">
+                    <span class="text-2xl mb-2">✅</span>
+                    <span class="text-sm font-medium">גיוס עסקים</span>
+                </div>
+                <div class="p-4 bg-lok-secondary-dark rounded-xl shadow-lg flex flex-col items-center card-hover opacity-70">
+                    <span class="text-2xl mb-2">⛔</span>
+                    <span class="text-sm font-medium">איסוף נתונים</span>
+                </div>
+                <div class="p-4 bg-lok-secondary-dark rounded-xl shadow-lg flex flex-col items-center card-hover opacity-70">
+                    <span class="text-2xl mb-2">🕓</span>
+                    <span class="text-sm font-medium">הדבקה (ממתין)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Pilot Metrics / Data Snapshot -->
+        <section class="animate-in" data-delay="200">
+            <h2 class="text-3xl font-bold mb-6 text-gray-200 border-b border-gray-700 pb-2">נתוני הפיילוט – תקציר כמותי</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <!-- Metric Card -->
+                <div class="p-6 bg-lok-secondary-dark rounded-xl shadow-xl border-t-4 border-lok-turquoise card-hover">
+                    <div class="text-4xl font-bold text-lok-turquoise">25</div>
+                    <p class="mt-2 text-gray-400 font-medium">רכבים פעילים</p>
+                </div>
+                <!-- Metric Card -->
+                <div class="p-6 bg-lok-secondary-dark rounded-xl shadow-xl border-t-4 border-lok-turquoise card-hover">
+                    <div class="text-4xl font-bold text-lok-turquoise">3</div>
+                    <p class="mt-2 text-gray-400 font-medium">עסקים משתתפים</p>
+                </div>
+                <!-- Metric Card -->
+                <div class="p-6 bg-lok-secondary-dark rounded-xl shadow-xl border-t-4 border-lok-turquoise card-hover">
+                    <div class="text-4xl font-bold text-lok-turquoise">12</div>
+                    <p class="mt-2 text-gray-400 font-medium">גרפיקאות בשימוש</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Participating Businesses -->
+        <section class="animate-in" data-delay="300">
+            <h2 class="text-3xl font-bold mb-6 text-gray-200 border-b border-gray-700 pb-2">העסקים המשתתפים – קריאה לפעולה (CTA)</h2>
+            
+            <ul class="space-y-4">
+                <!-- Business Item -->
+                <li class="p-4 bg-lok-secondary-dark rounded-lg flex justify-between items-center card-hover">
+                    <div class="flex-1">
+                        <p class="font-bold text-lg text-lok-turquoise">אושי אושי</p>
+                        <p class="text-sm text-gray-400">מבצע רול ב־10 ש״ח</p>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-xs font-semibold text-gray-300 block">קריאה לפעולה</span>
+                        <span class="text-xl font-bold text-white">3/10</span>
+                    </div>
+                </li>
+                <!-- Business Item -->
+                <li class="p-4 bg-lok-secondary-dark rounded-lg flex justify-between items-center card-hover">
+                    <div class="flex-1">
+                        <p class="font-bold text-lg text-lok-turquoise">טופ סלולר</p>
+                        <p class="text-sm text-gray-400">הגרלה לאייפון</p>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-xs font-semibold text-gray-300 block">קריאה לפעולה</span>
+                        <span class="text-xl font-bold text-white">7/10</span>
+                    </div>
+                </li>
+                <!-- Business Item -->
+                <li class="p-4 bg-lok-secondary-dark rounded-lg flex justify-between items-center card-hover">
+                    <div class="flex-1">
+                        <p class="font-bold text-lg text-lok-turquoise">מסר יומי</p>
+                        <p class="text-sm text-gray-400">קבל מסר משמח</p>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-xs font-semibold text-gray-300 block">קריאה לפעולה</span>
+                        <span class="text-xl font-bold text-white">5/10</span>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- 5. Graphics and Vehicles (Placeholder Grids) -->
+        <section class="animate-in" data-delay="400">
+            <h2 class="text-3xl font-bold mb-6 text-gray-200 border-b border-gray-700 pb-2">תיעוד ויזואלי</h2>
+            
+            <h3 class="text-xl font-semibold mb-4 text-gray-300">הגרפיקות בפיילוט (12)</h3>
+            <div class="grid grid-cols-3 md:grid-cols-6 gap-4 mb-10">
+                <!-- Graphic Placeholder Card -->
+                <div class="relative bg-lok-secondary-dark aspect-square rounded-lg overflow-hidden group border border-gray-700 hover:border-lok-turquoise transition-all duration-300">
+                    <div class="bg-gray-800 w-full h-full flex items-center justify-center text-gray-400 text-sm">Design 1</div>
+                    <div class="absolute inset-0 bg-black bg-opacity-70 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <span class="text-xs text-lok-turquoise font-medium">גרפיקה 1 - מבצע אושי</span>
+                    </div>
+                </div>
+                <!-- Repeat placeholder for visual effect -->
+                <div class="bg-gray-800 aspect-square rounded-lg border border-gray-700"></div>
+                <div class="bg-gray-800 aspect-square rounded-lg border border-gray-700"></div>
+                <div class="bg-gray-800 aspect-square rounded-lg border border-gray-700"></div>
+                <div class="bg-gray-800 aspect-square rounded-lg border border-gray-700"></div>
+                <div class="bg-gray-800 aspect-square rounded-lg border border-gray-700"></div>
+            </div>
+
+            <h3 class="text-xl font-semibold mb-4 text-gray-300">סטטוס רכבים (25)</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Vehicle Card - Closed -->
+                <div class="p-4 bg-red-900/20 border-r-4 border-red-500 rounded-lg flex justify-between items-center card-hover">
+                    <span class="font-medium text-gray-300">רכב 101# - כרטיס סגור</span>
+                    <span class="text-sm text-red-400">◼︎ ללא מודעה</span>
+                </div>
+                <!-- Vehicle Card - Open -->
+                <div class="p-4 bg-lok-turquoise/10 border-r-4 border-lok-turquoise rounded-lg flex justify-between items-center card-hover">
+                    <span class="font-medium text-gray-300">רכב 102# - כרטיס פתוח</span>
+                    <a href="#" class="text-sm text-lok-turquoise hover:underline">⇦ קישור למודעה</a>
+                </div>
+                <!-- Repeat for visual effect -->
+                <div class="p-4 bg-lok-turquoise/10 border-r-4 border-lok-turquoise rounded-lg flex justify-between items-center card-hover">
+                    <span class="font-medium text-gray-300">רכב 103# - כרטיס פתוח</span>
+                    <a href="#" class="text-sm text-lok-turquoise hover:underline">⇦ קישור למודעה</a>
+                </div>
+                <div class="p-4 bg-red-900/20 border-r-4 border-red-500 rounded-lg flex justify-between items-center card-hover">
+                    <span class="font-medium text-gray-300">רכב 104# - כרטיס סגור</span>
+                    <span class="text-sm text-red-400">◼︎ ללא מודעה</span>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- 6. Data to be Collected (Icons + Text) -->
+        <section class="animate-in" data-delay="500">
+            <h2 class="text-3xl font-bold mb-6 text-gray-200 border-b border-gray-700 pb-2">דאטה ואנליזה – ערוצי איסוף</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Data Point Card 1 -->
+                <div class="flex flex-col items-center p-4 bg-lok-secondary-dark rounded-xl shadow-lg card-hover">
+                    <span class="text-4xl text-lok-turquoise mb-2">🖱️</span>
+                    <p class="font-bold text-gray-200">קליקים / סריקות QR</p>
+                    <p class="text-xs text-gray-400 text-center mt-1">אינטראקציות ראשוניות</p>
+                </div>
+                
+                <!-- Data Point Card 2 -->
+                <div class="flex flex-col items-center p-4 bg-lok-secondary-dark rounded-xl shadow-lg card-hover">
+                    <span class="text-4xl text-lok-turquoise mb-2">⏱️</span>
+                    <p class="font-bold text-gray-200">זמן שהייה בעמוד</p>
+                    <p class="text-xs text-gray-400 text-center mt-1">מדידת מעורבות קהל</p>
+                </div>
+                
+                <!-- Data Point Card 3 -->
+                <div class="flex flex-col items-center p-4 bg-lok-secondary-dark rounded-xl shadow-lg card-hover">
+                    <span class="text-4xl text-lok-turquoise mb-2">⚙️</span>
+                    <p class="font-bold text-gray-200">דוחות תקלה</p>
+                    <p class="text-xs text-gray-400 text-center mt-1">פרסום שגוי או פג תוקף</p>
+                </div>
+
+                <!-- Data Point Card 4 -->
+                <div class="flex flex-col items-center p-4 bg-lok-secondary-dark rounded-xl shadow-lg card-hover">
+                    <span class="text-4xl text-lok-turquoise mb-2">🔗</span>
+                    <p class="font-bold text-gray-200">העברת דאטה לעסקים</p>
+                    <p class="text-xs text-gray-400 text-center mt-1">אינטגרציה ודיווח</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 7. Responsibilities -->
+        <section class="animate-in" data-delay="600">
+            <h2 class="text-3xl font-bold mb-6 text-gray-200 border-b border-gray-700 pb-2">תחומי אחריות ליבה</h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <!-- Person Card -->
+                <div class="p-4 bg-lok-secondary-dark rounded-xl shadow-lg border-b-2 border-lok-turquoise card-hover">
+                    <p class="text-xl font-bold text-white">אלירן</p>
+                    <p class="text-sm text-gray-400 mt-1">אחראי רכבים</p>
+                </div>
+                <!-- Person Card -->
+                <div class="p-4 bg-lok-secondary-dark rounded-xl shadow-lg border-b-2 border-lok-turquoise card-hover">
+                    <p class="text-xl font-bold text-white">ורד</p>
+                    <p class="text-sm text-gray-400 mt-1">אחראית עסקים</p>
+                </div>
+                <!-- Person Card -->
+                <div class="p-4 bg-lok-secondary-dark rounded-xl shadow-lg border-b-2 border-lok-turquoise card-hover">
+                    <p class="text-xl font-bold text-white">אבירם</p>
+                    <p class="text-sm text-gray-400 mt-1">גרפיקות ושיווק</p>
+                </div>
+                <!-- Person Card -->
+                <div class="p-4 bg-lok-secondary-dark rounded-xl shadow-lg border-b-2 border-lok-turquoise card-hover">
+                    <p class="text-xl font-bold text-white">נתנאל</p>
+                    <p class="text-sm text-gray-400 mt-1">פיקוח ותיאום מערכות</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. Data Forecast / Visual Estimation -->
+        <section class="animate-in" data-delay="700">
+            <h2 class="text-3xl font-bold mb-6 text-gray-200 border-b border-gray-700 pb-2">צפי נתונים (הערכה ריאלית)</h2>
+
+            <div class="p-8 bg-lok-secondary-dark rounded-xl shadow-2xl space-y-6">
+                
+                <!-- Estimation Item 1: Exposure -->
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="font-medium text-gray-300">חשיפות צפויות (Imp.)</span>
+                        <span class="font-bold text-lok-turquoise">150,000</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 75%;"></div>
+                    </div>
+                </div>
+
+                <!-- Estimation Item 2: Conversion Rate -->
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="font-medium text-gray-300">יחס המרה (CR)</span>
+                        <span class="font-bold text-lok-turquoise">2.5%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 25%;"></div>
+                    </div>
+                </div>
+
+                <!-- Estimation Item 3: Cost-Benefit -->
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="font-medium text-gray-300">עלות מול תועלת (ROI)</span>
+                        <span class="font-bold text-lok-turquoise">חיובי (x1.5)</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 50%;"></div>
+                    </div>
+                </div>
+                
+                <div class="pt-4 text-center">
+                    <a href="#" class="text-sm text-gray-500 hover:text-lok-turquoise transition-colors duration-300">
+                        🔗 קישור לקובץ אקסל להזנת נתונים ידנית (פנימי)
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. Motivational Summary -->
+        <section class="animate-in" data-delay="800">
+            <h2 class="text-3xl font-bold mb-6 text-gray-200 border-b border-gray-700 pb-2">הרוח של לוק</h2>
+
+            <div class="p-8 bg-gradient-to-l from-lok-dark to-lok-secondary-dark rounded-xl shadow-2xl">
+                <p class="text-2xl font-light italic leading-relaxed text-gray-300">
+                    "זה לא עוד ניסוי – זה השלב שבו הרעיון שלנו הופך לשטח אמיתי. כל רכב הוא נקודת אור שמחברת בין מותג לאדם. 
+                    <span class="text-lok-turquoise font-medium">יחד אנחנו משנים את מפת הפרסום הדינמי בישראל.</span>"
+                </p>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer class="text-center text-gray-600 text-sm pt-10 border-t border-gray-800">
+            <p>© 2025 LOK. כל הזכויות שמורות. מסמך פנימי – לשימוש הצוות בלבד.</p>
+        </footer>
+
+    </main>
+    
+    <!-- Simple JavaScript for soft entrance (simulating AOS) -->
+    <script>
+        // Function to check if an element is in the viewport
+        const isVisible = (el) => {
+            const rect = el.getBoundingClientRect();
+            return (
+                rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+            );
+        };
+
+        const animateElements = document.querySelectorAll('.animate-in');
+
+        const observerCallback = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    const delay = parseInt(el.getAttribute('data-delay') || 0);
+                    setTimeout(() => {
+                        el.classList.add('is-visible');
+                    }, delay);
+                    observer.unobserve(el);
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(observerCallback, { threshold: 0.1 });
+
+        // Observe elements
+        animateElements.forEach(el => {
+            observer.observe(el);
+        });
+
+        // Fallback for initial load (to ensure Hero Section is visible)
+        document.addEventListener('DOMContentLoaded', () => {
+            animateElements.forEach(el => {
+                if (el.getAttribute('data-delay') === '0') {
+                    el.classList.add('is-visible');
+                    observer.unobserve(el);
+                }
+            });
+        });
+        
+        // This is a mock function to replace the uploaded image source for the example.
+        // In a real environment, you should ensure the actual image is served.
+        document.addEventListener('DOMContentLoaded', () => {
+             const logo = document.querySelector('img[alt="לוגו לוק"]');
+             if (logo) {
+                 logo.onerror = function() {
+                     // Fallback: Use inline SVG for LOK look
+                     logo.outerHTML = '<svg width="40" height="40" viewBox="0 0 100 100" fill="none" class="h-10 w-auto"><path d="M 20 80 C 20 60, 40 40, 60 40 C 80 40, 80 60, 80 80" stroke="#00CCFF" stroke-width="8" stroke-linecap="round"/><circle cx="50" cy="50" r="10" fill="#00CCFF"/></svg>';
+                 };
+             }
+        });
+        
+    </script>
+</body>
+</html>

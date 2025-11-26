@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>l00K | עסקי שוטף</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF', 
+                        'lok-dark-gray': '#1F2937', 
+                        'lok-soft-gray': '#F9FAFB', 
+                        'lok-blue-light': '#EBF5FF',
+                        'lok-accent': '#10B981', 
+                        'lok-hr': '#EF4444',
+                        'lok-infra': '#3B82F6',
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            color: #1F2937;
+            min-height: 100vh;
+            background-color: #F9FAFB;
+            overflow-x: hidden; 
+        }
+        .system-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: linear-gradient(90deg, #F9FAFB 90%, #EBF5FF 100%);
+            z-index: 0;
+            opacity: 0.7;
+        }
+        .fixed-header {
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05); 
+            background-color: #FFFFFF;
+            z-index: 50;
+        }
+        .grid-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
+            min-height: 180px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .grid-button:hover {
+            transform: translateY(-4px);
+            border-color: #007AFF;
+            box-shadow: 0 10px 20px rgba(0, 122, 255, 0.15); 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="system-background"></div>
+
+    <header class="fixed-header sticky top-0 w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center relative z-10">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                 <img src="https://placehold.co/40x40/007AFF/FFFFFF?text=L" alt="לוגו l00K" class="rounded-full">
+                <a href="תפריט ראשי2.HTML" class="text-3xl font-black text-lok-dark-gray">
+                    <span class="text-lok-primary">l00K</span>
+                    <span class="text-xl font-light"> | עסקי שוטף</span>
+                </a>
+            </div>
+            <div class="flex-1 max-w-xl mx-8 hidden sm:block">
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="חיפוש בדפי עסקי שוטף..." 
+                           class="w-full py-2 pr-4 pl-12 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-lok-primary text-base transition-all">
+                    <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16 relative z-10">
+
+        <!-- Back Button -->
+        <div class="my-6">
+            <a href="תפריט ראשי2.HTML" class="inline-flex items-center text-lok-primary font-bold hover:underline">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 transform rotate-180"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                חזרה לתפריט הראשי
+            </a>
+        </div>
+
+        <div class="p-6 sm:p-12 rounded-2xl border-b border-gray-200 mb-12 bg-white shadow-sm">
+            <h1 class="text-4xl lg:text-5xl font-extrabold text-lok-dark-gray leading-tight mb-3">
+                תחום עסקי שוטף
+            </h1>
+            <p class="text-gray-600 text-lg max-w-xl">
+                גישה לנתונים יומיים ותפעוליים, ניהול ספקים ומעקב אחר פעולות.
+            </p>
+        </div>
+
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold text-lok-dark-gray mb-6 border-r-4 border-lok-primary pr-3">דפים בקטגוריה</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- 1. ספקים -->
+                <a href="ספקים ראשי.HTML" class="grid-button bg-white p-6 rounded-xl">
+                    <div class="text-lok-primary mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-1">ספקים</h3>
+                    <p class="text-gray-500 text-sm text-center">ניהול ופרטי ספקים</p>
+                </a>
+
+                <!-- 2. ציר זמן ופעולות -->
+                <a href="ציקזמןופעולות.html" class="grid-button bg-white p-6 rounded-xl">
+                    <div class="text-lok-primary mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8H3"/><path d="M19 19H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2z"/><path d="M7 14h10"/></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-1">ציר זמן ופעולות</h3>
+                    <p class="text-gray-500 text-sm text-center">מעקב אחר פעולות ומשימות</p>
+                </a>
+                
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 relative z-10 border-t border-gray-200 mt-16 bg-white">
+        <p class="mt-4 text-gray-500 text-sm">מערכת l00K. כל הזכויות שמורות. </p>
+    </footer>
+    
+</body>
+</html>

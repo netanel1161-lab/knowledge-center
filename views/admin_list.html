@@ -1,0 +1,129 @@
+<!-- views/admin_list.html -->
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>רשימת פריטי ידע</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="min-h-screen flex flex-col">
+        <header class="bg-blue-600 text-white shadow-md">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <h1 class="text-2xl font-bold">רשימת פריטי ידע</h1>
+                <nav>
+                    <a href="/admin" class="text-blue-200 hover:text-white px-3 py-2 rounded-md text-sm font-medium">חזרה למרכז הניהול</a>
+                    <a href="/admin/add" class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium mr-2">הוסף פריט חדש</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="flex-grow max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 w-full">
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6">כל פריטי הידע</h2>
+
+                <div id="knowledge-items-list" class="space-y-4">
+                    <!-- Items will be loaded here by JavaScript -->
+                    <p id="loading-message" class="text-gray-500 text-center">טוען פריטי ידע...</p>
+                    <p id="no-items-message" class="text-gray-500 text-center hidden">אין פריטי ידע להצגה.</p>
+                </div>
+                <div id="message" class="mt-4 p-3 rounded-md text-sm hidden"></div>
+            </div>
+        </main>
+
+        <footer class="bg-gray-800 text-white py-4 text-center text-sm">
+            <p>&copy; 2023 מערכת מרכז ידע. כל הזכויות שמורות.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const listContainer = document.getElementById('knowledge-items-list');
+            const loadingMessage = document.getElementById('loading-message');
+            const noItemsMessage = document.getElementById('no-items-message');
+            const messageDiv = document.getElementById('message');
+
+            function displayMessage(text, isError = false) {
+                messageDiv.textContent = text;
+                messageDiv.className = `mt-4 p-3 rounded-md text-sm ${isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`;
+                messageDiv.classList.remove('hidden');
+            }
+
+            async function fetchAndRenderItems() {
+                listContainer.innerHTML = ''; // Clear previous items
+                loadingMessage.classList.remove('hidden');
+                noItemsMessage.classList.add('hidden');
+                messageDiv.classList.add('hidden');
+
+                try {
+                    const response = await fetch('/api/knowledge_items');
+                    if (!response.ok) {
+                        throw new Error('שגיאה בטעינת פריטי הידע');
+                    }
+                    const items = await response.json();
+
+                    loadingMessage.classList.add('hidden');
+
+                    if (items.length === 0) {
+                        noItemsMessage.classList.remove('hidden');
+                        return;
+                    }
+
+                    items.forEach(item => {
+                        const itemElement = document.createElement('div');
+                        itemElement.className = 'bg-gray-50 p-4 rounded-lg shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center';
+                        itemElement.innerHTML = `
+                            <div class="mb-2 md:mb-0">
+                                <h3 class="text-lg font-semibold text-gray-800">${item.title} (<span class="text-blue-600">${item.item_type}</span>)</h3>
+                                <p class="text-sm text-gray-600">ID: ${item.id} | Embedding ID: ${item.embedding_id ? item.embedding_id.substring(0, 8) + '...' : 'N/A'}</p>
+                                <p class="text-xs text-gray-500">עודכן: ${new Date(item.updated_at).toLocaleString('he-IL')}</p>
+                            </div>
+                            <div class="flex space-x-2 space-x-reverse">
+                                <a href="/admin/edit/${item.id}" class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                    ערוך
+                                </a>
+                                <button data-id="${item.id}" class="delete-btn inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    מחק
+                                </button>
+                            </div>
+                        `;
+                        listContainer.appendChild(itemElement);
+                    });
+
+                    // Add event listeners for delete buttons
+                    document.querySelectorAll('.delete-btn').forEach(button => {
+                        button.addEventListener('click', async (event) => {
+                            const itemIdToDelete = event.target.dataset.id;
+                            if (confirm(`האם אתה בטוח שברצונך למחוק את פריט ידע מספר ${itemIdToDelete}?`)) {
+                                try {
+                                    const response = await fetch(`/api/knowledge_items/${itemIdToDelete}`, {
+                                        method: 'DELETE'
+                                    });
+                                    if (!response.ok) {
+                                        const errorData = await response.json();
+                                        throw new Error(errorData.message || 'שגיאה במחיקת פריט ידע');
+                                    }
+                                    displayMessage('פריט ידע נמחק בהצלחה!');
+                                    fetchAndRenderItems(); // Refresh the list
+                                } catch (error) {
+                                    console.error('שגיאה במחיקה:', error);
+                                    displayMessage(`שגיאה במחיקת פריט ידע: ${error.message}`, true);
+                                }
+                            }
+                        });
+                    });
+
+                } catch (error) {
+                    console.error('שגיאה כללית בטעינת פריטי ידע:', error);
+                    loadingMessage.classList.add('hidden');
+                    displayMessage(`שגיאה בטעינת פריטי הידע: ${error.message}`, true);
+                }
+            }
+
+            fetchAndRenderItems();
+        });
+    </script>
+</body>
+</html>

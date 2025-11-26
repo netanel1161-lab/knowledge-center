@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>l00K - מרכז המידע | כניסה</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght=300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF',
+                        'lok-dark-gray': '#393939',
+                        'lok-soft-gray': '#F7F8FA',
+                        'lok-success': '#28A745',
+                        'lok-error': '#DC3545',
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            color: #393939;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background-color: #F7F8FA; /* Default background */
+        }
+
+        /* Diagonal background split */
+        .login-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #F7F8FA 50%, #EBF5FF 50%); /* soft blue background for the diagonal half */
+            z-index: 0;
+        }
+
+        /* Animated Geometric Circles - Subtle */
+        .system-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            opacity: 0.15; 
+            z-index: 1;
+        }
+
+        .system-background svg {
+            position: absolute;
+            animation: moveCircles 30s linear infinite alternate; 
+            filter: blur(10px);
+        }
+
+        .system-background .circle-1 {
+            width: 500px; height: 500px;
+            top: -10%; right: -10%;
+            fill: #007AFF;
+            animation-delay: 0s;
+        }
+
+        .system-background .circle-2 {
+            width: 700px; height: 700px;
+            bottom: -20%; left: -20%;
+            fill: #007AFF;
+            animation-delay: 15s;
+        }
+
+        @keyframes moveCircles {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-30px, 30px) scale(1.05); }
+        }
+
+        /* Login Card */
+        .login-card {
+            z-index: 10;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* PIN Input Styling */
+        .pin-input {
+            width: 60px;
+            height: 70px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #007AFF;
+            border: 2px solid #EBF5FF;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .pin-input:focus {
+            outline: none;
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+        }
+
+        /* Feedback Message Styling */
+        #feedback-message {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        #feedback-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #feedback-message.success {
+            color: #28A745;
+        }
+        #feedback-message.error {
+            color: #DC3545;
+        }
+
+        /* Lockout message style */
+        .lockout-text {
+            color: #DC3545;
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Button style */
+        .login-button {
+            transition: all 0.3s;
+        }
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 122, 255, 0.3);
+        }
+        .login-button:disabled {
+            background-color: #B0C4DE;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-background"></div> 
+    
+    <div class="system-background">
+        <svg class="circle-1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50"/></svg>
+        <svg class="circle-2" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50"/></svg>
+    </div>
+
+    <!-- Login Card -->
+    <div id="login-card" class="login-card w-full max-w-md p-8 sm:p-12 rounded-3xl text-center">
+        
+        <h1 class="text-4xl font-extrabold text-lok-dark-gray mb-2">l00K</h1>
+        <p class="text-xl font-medium text-gray-500 mb-10">מרכז המידע</p>
+        
+        <!-- הודעת נעילה -->
+        <div id="lockout-timer" class="text-center mb-8 hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#DC3545" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-3"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <p class="text-lg font-bold lockout-text">המכשיר ננעל זמנית עקב ריבוי ניסיונות כושלים.</p>
+            <p class="text-gray-600 mt-2">נא לנסות שוב בעוד <span id="time-remaining" class="font-bold"></span>.</p>
+        </div>
+
+        <!-- טופס כניסה -->
+        <form id="login-form" class="space-y-6">
+            
+            <label for="pin-container" class="block text-right text-base font-medium text-gray-700 mb-4">
+                הכנס קוד כניסה (4 ספרות):
+            </label>
+
+            <!-- קונטיינר לקוד - 4 תיבות קלט -->
+            <div id="pin-container" dir="ltr" class="flex justify-center space-x-2 space-x-reverse mb-6">
+                <input type="tel" maxlength="1" id="pin-1" class="pin-input rounded-xl focus:ring-4" autocomplete="off" inputmode="numeric">
+                <input type="tel" maxlength="1" id="pin-2" class="pin-input rounded-xl focus:ring-4" autocomplete="off" inputmode="numeric" disabled>
+                <input type="tel" maxlength="1" id="pin-3" class="pin-input rounded-xl focus:ring-4" autocomplete="off" inputmode="numeric" disabled>
+                <input type="tel" maxlength="1" id="pin-4" class="pin-input rounded-xl focus:ring-4" autocomplete="off" inputmode="numeric" disabled>
+            </div>
+            
+            <!-- מוני ניסיונות ומשוב -->
+            <div id="feedback-message" class="text-center text-sm font-medium h-6"></div>
+            
+            <button type="submit" id="login-btn" disabled class="login-button w-full py-3 rounded-xl text-lg font-bold text-white bg-lok-primary hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-lok-primary/50">
+                כניסה
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // -- הגדרות קבועות --
+        const CORRECT_PIN = '7458';
+        const MAX_ATTEMPTS = 8;
+        const LOCKOUT_DURATION_MS = 24 * 60 * 60 * 1000; // 24 שעות
+
+        // -- אלמנטים DOM --
+        const pinInputs = [
+            document.getElementById('pin-1'),
+            document.getElementById('pin-2'),
+            document.getElementById('pin-3'),
+            document.getElementById('pin-4'),
+        ];
+        const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-btn');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const lockoutTimerDiv = document.getElementById('lockout-timer');
+        const timeRemainingSpan = document.getElementById('time-remaining');
+        const loginCard = document.getElementById('login-card');
+
+        // -- משתנים במצב אפליקציה (localStorage) --
+        const STORAGE_KEY_ATTEMPTS = 'l00K_attempts';
+        const STORAGE_KEY_LOCKOUT = 'l00K_lockout';
+        
+        let attempts = parseInt(localStorage.getItem(STORAGE_KEY_ATTEMPTS) || 0);
+
+        // -- פונקציות עזר --
+
+        /**
+         * מציג הודעת משוב עם סוג וטקסט
+         * @param {string} type - 'success' or 'error'
+         * @param {string} text - הטקסט להצגה
+         */
+        function showFeedback(type, text) {
+            feedbackMessage.classList.remove('show', 'success', 'error');
+            // Timeout to allow re-triggering animation if needed
+            setTimeout(() => {
+                feedbackMessage.textContent = text;
+                feedbackMessage.classList.add('show', type);
+            }, 10); 
+        }
+
+        /**
+         * מנקה את הקלטים ומחזיר את המיקוד לשדה הראשון
+         */
+        function clearInputs() {
+            pinInputs.forEach(input => {
+                input.value = '';
+                input.disabled = true;
+            });
+            pinInputs[0].disabled = false;
+            pinInputs[0].focus();
+            loginBtn.disabled = true;
+        }
+
+        /**
+         * מעדכן את מונה הניסיונות ומטפל בנעילה
+         */
+        function handleFailedAttempt() {
+            attempts++;
+            localStorage.setItem(STORAGE_KEY_ATTEMPTS, attempts);
+
+            clearInputs();
+
+            if (attempts >= MAX_ATTEMPTS) {
+                const lockoutTime = Date.now() + LOCKOUT_DURATION_MS;
+                localStorage.setItem(STORAGE_KEY_LOCKOUT, lockoutTime);
+                checkLockoutStatus(); // מפעיל את מנגנון הנעילה
+            } else {
+                const remaining = MAX_ATTEMPTS - attempts;
+                showFeedback('error', `קוד שגוי. נותרו לך ${remaining} ניסיונות.`);
+            }
+        }
+        
+        /**
+         * בדיקה ועדכון מצב הנעילה
+         */
+        function checkLockoutStatus() {
+            const lockoutUntil = parseInt(localStorage.getItem(STORAGE_KEY_LOCKOUT) || 0);
+            const now = Date.now();
+            
+            // בדיקה אם המכשיר נעול
+            if (lockoutUntil > now) {
+                // המכשיר נעול
+                loginForm.classList.add('hidden');
+                lockoutTimerDiv.classList.remove('hidden');
+                
+                // עדכון טיימר
+                const interval = setInterval(() => {
+                    const timeLeftMs = lockoutUntil - Date.now();
+                    if (timeLeftMs <= 0) {
+                        clearInterval(interval);
+                        localStorage.removeItem(STORAGE_KEY_LOCKOUT);
+                        localStorage.setItem(STORAGE_KEY_ATTEMPTS, 0); // איפוס ניסיונות
+                        attempts = 0;
+                        location.reload(); // רענון הדף לאחר פתיחת הנעילה
+                        return;
+                    }
+
+                    const hours = Math.floor(timeLeftMs / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeLeftMs % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
+
+                    timeRemainingSpan.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+
+                return true; // נעול
+            } else {
+                // לא נעול או שזמן הנעילה עבר
+                lockoutTimerDiv.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+                clearInputs(); // לוודא שהכניסות נקיות
+                return false; // לא נעול
+            }
+        }
+
+        // -- לוגיקה של הקלט האוטומטי --
+
+        pinInputs.forEach((input, index) => {
+            // הגבלת קלט לספרות בלבד
+            input.addEventListener('input', (e) => {
+                const value = e.target.value;
+                e.target.value = value.replace(/[^0-9]/g, '');
+
+                if (e.target.value.length === 1) {
+                    // מעבר אוטומטי לשדה הבא
+                    if (index < pinInputs.length - 1) {
+                        pinInputs[index + 1].disabled = false;
+                        pinInputs[index + 1].focus();
+                    } else {
+                        // הגיע לסוף - הפעלת כפתור הכניסה
+                        loginBtn.disabled = false;
+                        loginBtn.focus();
+                    }
+                } else {
+                    // אם נמחק תו, נטרל את כפתור הכניסה
+                    loginBtn.disabled = true;
+                }
+            });
+
+            // טיפול ב-Backspace למעבר אוטומטי לשדה הקודם
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
+                    e.preventDefault();
+                    pinInputs[index].disabled = true;
+                    pinInputs[index - 1].value = '';
+                    pinInputs[index - 1].focus();
+                    loginBtn.disabled = true;
+                }
+            });
+        });
+
+        // -- לוגיקה של אימות הטופס --
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // איסוף הקוד
+            const enteredPin = pinInputs.map(input => input.value).join('');
+
+            if (enteredPin.length !== 4) {
+                showFeedback('error', 'יש להזין קוד בן 4 ספרות.');
+                return;
+            }
+
+            if (enteredPin === CORRECT_PIN) {
+                // קוד נכון
+                localStorage.removeItem(STORAGE_KEY_ATTEMPTS); // איפוס מונה
+                attempts = 0;
+                
+                showFeedback('success', '✅ קוד נכון! מעביר אותך למרכז המידע...');
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'מתחבר...';
+                
+                // הדמיית מעבר לעמוד הבא
+                setTimeout(() => {
+                    // כאן תהיה הפנייה לעמוד הראשי (או לאפליקציה ב-React/Angular)
+                    // לצורך ההדגמה, נציג הודעה
+                    loginCard.innerHTML = '<div class="p-12 text-center"><h2 class="text-3xl font-bold text-lok-success mb-4">כניסה מוצלחת!</h2><p class="text-gray-600">אתה יכול כעת להשתמש במערכת.</p></div>';
+                }, 1500);
+
+            } else {
+                // קוד שגוי
+                handleFailedAttempt();
+            }
+        });
+
+        // -- אתחול ראשוני --
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!checkLockoutStatus()) {
+                // אם המכשיר לא נעול, מתחילים בפוקוס על השדה הראשון
+                pinInputs[0].focus();
+                
+                // מציג הודעה אם יש ניסיונות קודמים כושלים
+                if (attempts > 0) {
+                     const remaining = MAX_ATTEMPTS - attempts;
+                     showFeedback('error', `נשארו ${remaining} ניסיונות לפני נעילה זמנית.`);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

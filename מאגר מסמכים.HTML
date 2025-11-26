@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>l00K | מאגר מסמכים</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF', 
+                        'lok-dark-gray': '#1F2937', 
+                        'lok-soft-gray': '#F9FAFB', 
+                        'lok-blue-light': '#EBF5FF',
+                        'lok-accent': '#10B981', 
+                        'lok-doc': '#8B5CF6', // New color for documents
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            color: #1F2937;
+            min-height: 100vh;
+            background-color: #F9FAFB;
+            overflow-x: hidden; 
+        }
+        .system-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: linear-gradient(90deg, #F9FAFB 90%, #EBF5FF 100%);
+            z-index: 0;
+            opacity: 0.7;
+        }
+        .fixed-header {
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05); 
+            background-color: #FFFFFF;
+            z-index: 50;
+        }
+        .grid-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
+            min-height: 180px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .grid-button:hover {
+            transform: translateY(-4px);
+            border-color: #8B5CF6; /* New document color on hover */
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.15); 
+        }
+        .disabled-link {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="system-background"></div>
+
+    <header class="fixed-header sticky top-0 w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center relative z-10">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                 <img src="https://placehold.co/40x40/007AFF/FFFFFF?text=L" alt="לוגו l00K" class="rounded-full">
+                <a href="תפריט ראשי2.HTML" class="text-3xl font-black text-lok-dark-gray">
+                    <span class="text-lok-primary">l00K</span>
+                    <span class="text-xl font-light"> | מאגר מסמכים</span>
+                </a>
+            </div>
+            <div class="flex-1 max-w-xl mx-8 hidden sm:block">
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="חיפוש במסמכי החברה..." 
+                           class="w-full py-2 pr-4 pl-12 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-lok-primary text-base transition-all">
+                    <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16 relative z-10">
+
+        <!-- Back Button -->
+        <div class="my-6">
+            <a href="תפריט ראשי2.HTML" class="inline-flex items-center text-lok-primary font-bold hover:underline">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 transform rotate-180"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                חזרה לתפריט הראשי
+            </a>
+        </div>
+
+        <div class="p-6 sm:p-12 rounded-2xl border-b border-gray-200 mb-12 bg-white shadow-sm">
+            <h1 class="text-4xl lg:text-5xl font-extrabold text-lok-dark-gray leading-tight mb-3">
+                מאגר מסמכים
+            </h1>
+            <p class="text-gray-600 text-lg max-w-xl">
+                ריכוז כלל המסמכים, הנהלים, התבניות והחומרים הרשמיים של החברה במקום אחד.
+            </p>
+        </div>
+
+        <div id="document-categories" class="space-y-4">
+
+            <!-- Category: נהלים ומדיניות -->
+            <div class="category-item border rounded-xl overflow-hidden shadow-sm">
+                <button class="category-header w-full flex justify-between items-center p-5 bg-white hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="text-lok-doc ml-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        </div>
+                        <h3 class="text-xl font-bold">נהלים ומדיניות</h3>
+                    </div>
+                    <svg class="chevron-icon transform transition-transform" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <div class="category-content bg-white border-t" style="display: none;">
+                    <a href="javascript:void(0)" class="document-link block p-4 hover:bg-gray-50 transition-colors disabled-link">נוהל קליטת עובד חדש</a>
+                    <a href="javascript:void(0)" class="document-link block p-4 border-t hover:bg-gray-50 transition-colors disabled-link">מדיניות עבודה מהבית</a>
+                </div>
+            </div>
+
+            <!-- Category: תבניות וטפסים -->
+            <div class="category-item border rounded-xl overflow-hidden shadow-sm">
+                <button class="category-header w-full flex justify-between items-center p-5 bg-white hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="text-lok-doc ml-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10v6"/><path d="M6 10v1.44a2.9 2.9 0 0 0 2.65 2.87L12 16l3.35-1.69a2.9 2.9 0 0 0 2.65-2.87V10H6Z"/><path d="M12 16v6"/></svg>
+                        </div>
+                        <h3 class="text-xl font-bold">תבניות וטפסים</h3>
+                    </div>
+                    <svg class="chevron-icon transform transition-transform" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+                <div class="category-content bg-white border-t" style="display: none;">
+                    <a href="javascript:void(0)" class="document-link block p-4 hover:bg-gray-50 transition-colors disabled-link">טופס בקשת חופשה</a>
+                </div>
+            </div>
+            
+            <!-- Category: שיווק ופרסום (New) -->
+            <div class="category-item border rounded-xl overflow-hidden shadow-sm">
+                <a href="תפריט_שיווק.HTML" class="category-link w-full flex justify-between items-center p-5 bg-white hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="text-yellow-500 ml-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 11 9-5 9 5-9 5-9-5z"/><path d="m21 16-9 5-9-5"/><path d="m21 11-9 5-9-5"/></svg>
+                        </div>
+                        <h3 class="text-xl font-bold">שיווק ופרסום</h3>
+                    </div>
+                    <svg class="chevron-icon transform transition-transform" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transform -rotate-90"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </a>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="text-center py-6 relative z-10 border-t border-gray-200 mt-16 bg-white">
+        <p class="mt-4 text-gray-500 text-sm">מערכת l00K. כל הזכויות שמורות. </p>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const categoryHeaders = document.querySelectorAll('.category-header');
+
+            categoryHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const chevron = header.querySelector('.chevron-icon');
+
+                    if (content.style.display === 'none') {
+                        content.style.display = 'block';
+                        chevron.classList.add('rotate-180');
+                    } else {
+                        content.style.display = 'none';
+                        chevron.classList.remove('rotate-180');
+                    }
+                });
+            });
+        });
+    </script>
+    
+</body>
+</html>

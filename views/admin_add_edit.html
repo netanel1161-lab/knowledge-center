@@ -1,0 +1,162 @@
+<!-- views/admin_add_edit.html -->
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניהול פריט ידע</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="min-h-screen flex flex-col">
+        <header class="bg-blue-600 text-white shadow-md">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <h1 class="text-2xl font-bold">ניהול פריט ידע</h1>
+                <nav>
+                    <a href="/admin" class="text-blue-200 hover:text-white px-3 py-2 rounded-md text-sm font-medium">חזרה למרכז הניהול</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="flex-grow max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 w-full">
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                <h2 id="form-title" class="text-2xl font-semibold text-gray-900 mb-6">הוסף פריט ידע חדש</h2>
+
+                <form id="knowledge-item-form" class="space-y-4">
+                    <div>
+                        <label for="item_type" class="block text-sm font-medium text-gray-700">סוג פריט</label>
+                        <select id="item_type" name="item_type" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="">בחר סוג...</option>
+                            <option value="supplier">ספק</option>
+                            <option value="contract">חוזה</option>
+                            <option value="image">תמונה</option>
+                            <option value="specification">אפיון</option>
+                            <option value="strategy">אסטרטגיה</option>
+                            <option value="other">אחר</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700">כותרת</label>
+                        <input type="text" id="title" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" placeholder="כותרת הפריט">
+                    </div>
+                    <div>
+                        <label for="content" class="block text-sm font-medium text-gray-700">תוכן (יכול להכיל HTML)</label>
+                        <textarea id="content" name="content" rows="10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" placeholder="תוכן מלא של הפריט"></textarea>
+                    </div>
+                    <div>
+                        <label for="metadata" class="block text-sm font-medium text-gray-700">מטא-דאטה (JSON)</label>
+                        <textarea id="metadata" name="metadata" rows="5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" placeholder='{"key": "value", "another_key": 123}'></textarea>
+                        <p class="mt-2 text-sm text-gray-500">פורמט JSON חוקי בלבד.</p>
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            שמור פריט ידע
+                        </button>
+                    </div>
+                </form>
+                <div id="message" class="mt-4 p-3 rounded-md text-sm hidden"></div>
+            </div>
+        </main>
+
+        <footer class="bg-gray-800 text-white py-4 text-center text-sm">
+            <p>&copy; 2023 מערכת מרכז ידע. כל הזכויות שמורות.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('knowledge-item-form');
+            const formTitle = document.getElementById('form-title');
+            const messageDiv = document.getElementById('message');
+            const itemId = new URLSearchParams(window.location.search).get('id'); // Get item ID from URL for edit mode
+
+            let currentItem = null; // To store data of item being edited
+
+            // Function to display messages
+            function displayMessage(text, isError = false) {
+                messageDiv.textContent = text;
+                messageDiv.className = `mt-4 p-3 rounded-md text-sm ${isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`;
+                messageDiv.classList.remove('hidden');
+            }
+
+            // Fetch item data if in edit mode
+            if (itemId) {
+                formTitle.textContent = 'ערוך פריט ידע קיים';
+                fetch(`/api/knowledge_items/${itemId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('פריט ידע לא נמצא');
+                        }
+                        return response.json();
+                    })
+                    .then(item => {
+                        currentItem = item;
+                        document.getElementById('item_type').value = item.item_type;
+                        document.getElementById('title').value = item.title;
+                        document.getElementById('content').value = item.content;
+                        document.getElementById('metadata').value = JSON.stringify(item.metadata, null, 2);
+                    })
+                    .catch(error => {
+                        console.error('שגיאה בטעינת נתוני הפריט:', error);
+                        displayMessage('שגיאה בטעינת נתוני הפריט.', true);
+                    });
+            }
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const itemType = document.getElementById('item_type').value;
+                const title = document.getElementById('title').value;
+                const content = document.getElementById('content').value;
+                let metadata = document.getElementById('metadata').value;
+
+                // Validate JSON metadata
+                try {
+                    metadata = metadata ? JSON.parse(metadata) : {};
+                } catch (e) {
+                    displayMessage('פורמט מטא-דאטה אינו תקין (JSON).', true);
+                    return;
+                }
+
+                const payload = { item_type: itemType, title, content, metadata };
+
+                let response;
+                try {
+                    if (itemId && currentItem) { // Edit mode
+                        response = await fetch(`/api/knowledge_items/${itemId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    } else { // Add mode
+                        response = await fetch('/api/knowledge_items', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    }
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'שגיאת שרת');
+                    }
+
+                    const result = await response.json();
+                    displayMessage(`פריט ידע נשמר בהצלחה! ID: ${result.id}`);
+                    if (!itemId) { // Clear form only on successful add
+                        form.reset();
+                        document.getElementById('metadata').value = '';
+                    }
+                    // Optionally, redirect to the item list or dashboard
+                    // window.location.href = '/admin';
+
+                } catch (error) {
+                    console.error('שגיאה בשמירת פריט הידע:', error);
+                    displayMessage(`שגיאה בשמירת פריט הידע: ${error.message}`, true);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

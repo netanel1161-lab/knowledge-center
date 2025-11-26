@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>l00K | אסטרטגיה ותכנון</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF', 
+                        'lok-dark-gray': '#1F2937', 
+                        'lok-soft-gray': '#F9FAFB', 
+                        'lok-blue-light': '#EBF5FF',
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* הגדרת משתני CSS נוחים לשימוש ברקע */
+        :root {
+            --lok-primary: #007AFF;
+            --lok-blue-light: #EBF5FF;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            color: #1F2937;
+            min-height: 100vh;
+            background-color: #F9FAFB;
+            position: relative; /* חיוני למיקום הרקע */
+            overflow-x: hidden; /* מונע גלילה אופקית בגלל אלמנטי הרקע */
+        }
+        
+        /* ------------------------------------- */
+        /* עיצוב הרקע הגיאומטרי (עיגולים מטושטשים) */
+        /* ------------------------------------- */
+
+        /* עיגול גדול עליון-שמאלי בהיר */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -100px; 
+            right: 80%; /* ממוקם בצד שמאל (ימין ב-LRT, שמאל ב-RTL) */
+            width: 700px; 
+            height: 700px; 
+            border-radius: 50%;
+            background-color: var(--lok-blue-light);
+            opacity: 0.6; /* רך ועדין */
+            z-index: -1; 
+            filter: blur(120px); /* טשטוש קיצוני */
+        }
+
+        /* עיגול גדול תחתון-ימני כהה יותר */
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: -200px; 
+            left: 70%; /* ממוקם בצד ימין (שמאל ב-LRT, ימין ב-RTL) */
+            width: 800px; 
+            height: 800px; 
+            border-radius: 50%;
+            background-color: var(--lok-primary); 
+            opacity: 0.05; /* כמעט שקוף */
+            z-index: -1; 
+            filter: blur(150px); 
+        }
+
+        /* ------------------------------------- */
+        /* כרטיסים וכפתורים */
+        /* ------------------------------------- */
+
+        .card {
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            background-color: white;
+            transition: all 0.3s;
+            position: relative; /* מעל אלמנטי הרקע */
+            z-index: 10;
+        }
+        
+        .nav-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
+            min-height: 160px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .nav-button:hover {
+            transform: translateY(-4px);
+            border-color: #007AFF;
+            box-shadow: 0 10px 20px rgba(0, 122, 255, 0.15); 
+        }
+
+        .disabled-link {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    </style>
+</head>
+<body class="rtl">
+
+    <!-- כותרת ראשית קבועה (Header) -->
+    <header class="sticky top-0 w-full border-b border-gray-200 bg-white z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            
+            <!-- כותרת מערכת + חזרה ללוח מחוונים -->
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <a href="תפריט ראשי2.HTML" class="text-gray-500 hover:text-lok-primary transition-colors flex items-center text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1 transform rotate-180"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    חזרה ללוח מחוונים
+                </a>
+                <h1 class="text-2xl font-black text-lok-dark-gray border-r-4 border-lok-primary pr-3">
+                    <span class="text-lok-primary">אסטרטגיה ותכנון</span>
+                    <span class="text-xl font-light"> | תפריט ראשי</span>
+                </h1>
+            </div>
+
+            <!-- פרופיל משתמש (דמו) -->
+            <div class="flex items-center">
+                <span class="text-sm text-gray-600 hidden sm:inline">שלום, משתמש</span>
+                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-xs font-bold mr-3">
+                    דמו
+                </div>
+            </div>
+        </div>
+    </header>
+
+    
+    <!-- תוכן ראשי -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16">
+
+        <!-- 1. קטגוריית "אסטרטגיה" -->
+        <div class="card p-6 rounded-xl mb-8">
+            <h2 class="text-2xl font-bold mb-2 border-b pb-2 text-lok-dark-gray">אסטרטגיה</h2>
+            <p class="text-gray-500 mb-6">גישה לתוכניות שיווק, מכירות ויעדים ארוכי טווח.</p>
+            
+            <!-- רשת כפתורי אסטרטגיה - 5 כפתורים -->
+            <!-- שימו לב: lg:grid-cols-5 מכיל 5 עמודות במסך גדול -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+                
+                <!-- כפתור 1: שיווק ופרסום (קיים) -->
+                <a href="javascript:void(0)" class="nav-button bg-white p-6 rounded-xl disabled-link" title="הקישור אינו פעיל עדיין">
+                    <div class="text-lok-primary mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">שיווק ופרסום</h3>
+                    <p class="text-gray-500 text-sm">קמפיינים, דוחות</p>
+                </a>
+
+                <!-- כפתור 2: מכירות (קיים) -->
+                <a href="javascript:void(0)" class="nav-button bg-white p-6 rounded-xl disabled-link" title="הקישור אינו פעיל עדיין">
+                    <div class="text-lok-primary mb-3">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22m-6-6l6 6 6-6"></path><path d="M12 1v22m6-6l-6 6-6-6"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">מכירות</h3>
+                    <p class="text-gray-500 text-sm">תהליכים, יעדים</p>
+                </a>
+                
+                <!-- כפתור 3: חדש (פלייס-הולדר) -->
+                <a href="javascript:void(0)" class="nav-button bg-white p-6 rounded-xl disabled-link" title="הקישור אינו פעיל עדיין">
+                    <div class="text-lok-primary mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">כפתור חדש 3</h3>
+                    <p class="text-gray-500 text-sm">תיאור זמני</p>
+                </a>
+
+                <!-- כפתור 4: חדש (פלייס-הולדר) -->
+                <a href="javascript:void(0)" class="nav-button bg-white p-6 rounded-xl disabled-link" title="הקישור אינו פעיל עדיין">
+                    <div class="text-lok-primary mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line><line x1="20" y1="22" x2="20" y2="15"></line></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">כפתור חדש 4</h3>
+                    <p class="text-gray-500 text-sm">תיאור זמני</p>
+                </a>
+
+                <!-- כפתור 5: חדש (פלייס-הולדר) -->
+                <a href="javascript:void(0)" class="nav-button bg-white p-6 rounded-xl disabled-link" title="הקישור אינו פעיל עדיין">
+                    <div class="text-lok-primary mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">כפתור חדש 5</h3>
+                    <p class="text-gray-500 text-sm">תיאור זמני</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- 2. קטגוריית "תכנון" -->
+        <div class="card p-6 rounded-xl">
+            <h2 class="text-2xl font-bold mb-2 border-b pb-2 text-lok-dark-gray">תכנון</h2>
+            <p class="text-gray-500 mb-6">ניהול פרויקטים, פיילוטים ומשאבים גרפיים.</p>
+
+            <!-- רשת כפתורי תכנון - 5 כפתורים -->
+            <!-- שימו לב: lg:grid-cols-5 מכיל 5 עמודות במסך גדול -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+                
+                <!-- כפתור 1: פיילוט 1 (קיים) -->
+                <a href="javascript:void(0)" class="nav-button bg-white p-6 rounded-xl disabled-link" title="הקישור אינו פעיל עדיין">
+                    <div class="text-lok-primary mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4.5 21 3c-1.5-.5-3 0-4.5 1.5L13 8l-8.2 1.8c-1.9.4-3.3 2.2-2.8 4.1l1 4c.5 1.9 2.2 3.3 4.1 2.8L12 19l1.8 8.2c.4 1.9 2.2 3.3 4.1 2.8l4-1c1.9-.5 3.3-2.2 2.8-4.1L19.2 17.8z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">פיילוט 1 (LOK)</h3>
+                    <p class="text-gray-500 text-sm">נתונים, מסקנות</p>
+                </a>
+
+                <!-- כפתור 2: עיצוב גרפי (קיים ומקושר) -->
+                <a href="תפריט מחלקות גרפיות2.HTML" class="nav-button bg-white p-6 rounded-xl">
+                    <div class="text-lok-primary mb-3">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><line x1="12" y1="22" x2="12" y2="15.5"></line><polyline points="22 8.5 12 15.5 2 8.5"></polyline><polyline points="17 5.5 7 12 12 15.5 22 8.5 17 5.5"></polyline><line x1="12" y1="2" x2="12" y2="8.5"></line></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">עיצוב גרפי</h3>
+                    <p class="text-gray-500 text-sm">מאגר נכסים</p>
+                </a>
+
+                 <!-- כפתור 3: חדש (פלייס-הולדר) -->
+                <a href="javascript:void(0)" class="nav-button bg-white p-6 rounded-xl disabled-link" title="הקישור אינו פעיל עדיין">
+                    <div class="text-lok-primary mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">כפתור חדש 3</h3>
+                    <p class="text-gray-500 text-sm">תיאור זמני</p>
+                </a>
+
+                <!-- כפתור 4: חדש (פלייס-הולדר) -->
+                <a href="javascript:void(0)" class="nav-button bg-white p-6 rounded-xl disabled-link" title="הקישור אינו פעיל עדיין">
+                    <div class="text-lok-primary mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 6a4.5 4.5 0 0 1-9 0c-4.5 0-9 4.5-9 9s4.5 9 9 9c3 0 5-1.5 5-1.5"></path><path d="M16 17l4 4m0-4l-4 4"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">כפתור חדש 4</h3>
+                    <p class="text-gray-500 text-sm">תיאור זמני</p>
+                </a>
+
+                <!-- כפתור 5: חדש (פלייס-הולדר) -->
+                <a href="javascript:void(0)" class="nav-button bg-white p-6 rounded-xl disabled-link" title="הקישור אינו פעיל עדיין">
+                    <div class="text-lok-primary mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v3c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-3"></path><path d="M17 9l-5 5-5-5"></path><path d="M12 12V4"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">כפתור חדש 5</h3>
+                    <p class="text-gray-500 text-sm">תיאור זמני</p>
+                </a>
+            </div>
+        </div>
+
+    </main>
+    
+</body>
+</html>

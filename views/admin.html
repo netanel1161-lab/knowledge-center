@@ -1,0 +1,53 @@
+<!-- views/admin.html -->
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת ניהול מרכז ידע</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="min-h-screen flex flex-col">
+        <header class="bg-blue-600 text-white shadow-md">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                <h1 class="text-2xl font-bold">ניהול מרכז ידע</h1>
+                <nav>
+                    <a href="/" class="text-blue-200 hover:text-white px-3 py-2 rounded-md text-sm font-medium">לדף הבית</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="flex-grow max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 w-full">
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-4">ברוך הבא למערכת הניהול</h2>
+                <p class="text-gray-700 mb-6">
+                    כאן תוכל להוסיף, לערוך ולמחוק פריטים ממרכז הידע.
+                    <br>
+                    השתמש בקישורים למטה כדי להתחיל.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <a href="/admin/add" class="block p-6 bg-blue-50 hover:bg-blue-100 rounded-lg shadow-md transition duration-150 ease-in-out">
+                        <h3 class="text-xl font-semibold text-blue-800 mb-2">הוסף פריט חדש</h3>
+                        <p class="text-blue-700 text-sm">הוסף ספק, חוזה, תמונה, אפיון או אסטרטגיה חדשים למרכז הידע.</p>
+                    </a>
+                    <a href="/admin/list" class="block p-6 bg-green-50 hover:bg-green-100 rounded-lg shadow-md transition duration-150 ease-in-out">
+                        <h3 class="text-xl font-semibold text-green-800 mb-2">צפה וערוך פריטים</h3>
+                        <p class="text-green-700 text-sm">צפה בכל פריטי הידע הקיימים וערוך את פרטיהם.</p>
+                    </a>
+                    <a href="/admin/search" class="block p-6 bg-purple-50 hover:bg-purple-100 rounded-lg shadow-md transition duration-150 ease-in-out">
+                        <h3 class="text-xl font-semibold text-purple-800 mb-2">חיפוש פריטים</h3>
+                        <p class="text-purple-700 text-sm">חפש פריטי ידע באמצעות טקסט או חיפוש סמנטי.</p>
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <footer class="bg-gray-800 text-white py-4 text-center text-sm">
+            <p>&copy; 2023 מערכת מרכז ידע. כל הזכויות שמורות.</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>l00K | תשתיות ותפעול</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF', 
+                        'lok-dark-gray': '#1F2937', 
+                        'lok-soft-gray': '#F9FAFB', 
+                        'lok-blue-light': '#EBF5FF',
+                        'lok-accent': '#10B981', 
+                        'lok-hr': '#EF4444',
+                        'lok-infra': '#3B82F6',
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            color: #1F2937;
+            min-height: 100vh;
+            background-color: #F9FAFB;
+            overflow-x: hidden; 
+        }
+        .system-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: linear-gradient(90deg, #F9FAFB 90%, #EBF5FF 100%);
+            z-index: 0;
+            opacity: 0.7;
+        }
+        .fixed-header {
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05); 
+            background-color: #FFFFFF;
+            z-index: 50;
+        }
+        .grid-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
+            min-height: 180px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .grid-button:hover {
+            transform: translateY(-4px);
+            border-color: #3B82F6;
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.15); 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="system-background"></div>
+
+    <header class="fixed-header sticky top-0 w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center relative z-10">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                 <img src="https://placehold.co/40x40/3B82F6/FFFFFF?text=L" alt="לוגו l00K" class="rounded-full">
+                <a href="תפריט ראשי2.HTML" class="text-3xl font-black text-lok-dark-gray">
+                    <span class="text-lok-infra">l00K</span>
+                    <span class="text-xl font-light"> | תשתיות ותפעול</span>
+                </a>
+            </div>
+            <div class="flex-1 max-w-xl mx-8 hidden sm:block">
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="חיפוש בתשתיות, מערכות..." 
+                           class="w-full py-2 pr-4 pl-12 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-lok-infra text-base transition-all">
+                    <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16 relative z-10">
+
+        <!-- Back Button -->
+        <div class="my-6">
+            <a href="תפריט ראשי2.HTML" class="inline-flex items-center text-lok-infra font-bold hover:underline">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 transform rotate-180"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                חזרה לתפריט הראשי
+            </a>
+        </div>
+
+        <div class="p-6 sm:p-12 rounded-2xl border-b border-gray-200 mb-12 bg-white shadow-sm">
+            <h1 class="text-4xl lg:text-5xl font-extrabold text-lok-dark-gray leading-tight mb-3">
+                תחום תשתיות ותפעול
+            </h1>
+            <p class="text-gray-600 text-lg max-w-xl">
+                כלים טכניים, הגדרות מערכת ודפי עזר למפתחים.
+            </p>
+        </div>
+
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold text-lok-dark-gray mb-6 border-r-4 border-lok-infra pr-3">דפים בקטגוריה</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- 1. ספריית אייקונים -->
+                <a href="ספריית אייקוני SVG.HTML" class="grid-button bg-white p-6 rounded-xl">
+                    <div class="text-lok-infra mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10 13-2 2 2 2"/><path d="m14 13 2 2-2 2"/></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-1">ספריית אייקונים</h3>
+                    <p class="text-gray-500 text-sm text-center">כל אייקוני ה-SVG במערכת</p>
+                </a>
+
+                <!-- 2. הגדרות גרפיות -->
+                <a href="דף הגדרות גרפיות1.HTML" class="grid-button bg-white p-6 rounded-xl">
+                    <div class="text-lok-infra mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.48 13.1-1.76-1.76a2 2 0 0 0-2.83 0L14 14.25l-4.24-4.24 2.83-2.83a2 2 0 0 0 0-2.83L10.84 2.5a2 2 0 0 0-2.83 0L2.5 8.02a2 2 0 0 0 0 2.83l1.76 1.76"/><path d="m18 11 2-2-4.5-4.5-2 2"/><path d="m7 16 2-2-4.5-4.5-2 2"/><path d="m18 22 4-4"/><path d="m16 14-1.5-1.5"/><path d="m13 11-1.5-1.5"/><path d="m10 8-1.5-1.5"/></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-1">הגדרות גרפיות</h3>
+                    <p class="text-gray-500 text-sm text-center">תיעוד הגדרות וסגנונות</p>
+                </a>
+
+                <!-- 3. QE -->
+                <a href="QE.html" class="grid-button bg-white p-6 rounded-xl">
+                    <div class="text-lok-infra mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3.82 7.72 2.5-2.5a2.83 2.83 0 0 1 4 0l1.18 1.18"/><path d="m19.57 12.81-2.5 2.5a2.83 2.83 0 0 1-4 0l-4.88-4.88a2.83 2.83 0 0 1 0-4l2.5-2.5"/><path d="M12.57 7.71 16.43 11.57"/><circle cx="11" cy="11" r="8"/></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-1">בדיקות ואיכות (QE)</h3>
+                    <p class="text-gray-500 text-sm text-center">דוחות בדיקה ונתוני איכות</p>
+                </a>
+                
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 relative z-10 border-t border-gray-200 mt-16 bg-white">
+        <p class="mt-4 text-gray-500 text-sm">מערכת l00K. כל הזכויות שמורות. </p>
+    </footer>
+    
+</body>
+</html>

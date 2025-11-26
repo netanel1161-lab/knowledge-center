@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>l00K | עורך מסמך פיילוט</title>
+    
+    <!-- Tailwind CSS CDN --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Heebo Font --><link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'lok-primary': '#007AFF', 
+                        'lok-dark-gray': '#374151', /* שונה לאפור כהה יותר, פחות שחור */
+                        'lok-soft-gray': '#F9FAFB', 
+                        'lok-blue-light': '#EBF5FF',
+                        'lok-accent': '#10B981', 
+                        'lok-hr': '#EF4444', 
+                        'lok-infra': '#3B82F6', 
+                        'lok-light-bg': '#F4F6F8', /* רקע בהיר כללי */
+                        'lok-border-light': '#E5E7EB', /* צבע גבולות עדין */
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            color: #374151; /* טקסט כללי אפור כהה */
+            min-height: 100vh;
+            background-color: #F4F6F8; /* רקע כללי בהיר יותר */
+            overflow-x: hidden; /* למנוע גלילה אופקית */
+        }
+
+        /* רקע גיאומטרי עדין עם טישטוש */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(235, 245, 255, 0.4) 0%, rgba(249, 250, 251, 0.2) 50%, rgba(235, 245, 255, 0.4) 100%);
+            background-size: 200% 200%;
+            animation: gradient-animation 10s ease infinite alternate;
+            z-index: -1;
+            filter: blur(50px); /* טישטוש עדין */
+            opacity: 0.6;
+        }
+
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* כותרת עליונה בוטלה כבקשתך */
+
+        /* סגנון כפתור הוספה עגול (ה-+ים) - פחות אנימציה */
+        .add-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            line-height: 1;
+            transition: background-color 0.2s, box-shadow 0.2s; /* פחות אנימציות */
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 122, 255, 0.1); /* צללית עדינה */
+        }
+        .add-button:hover {
+            background-color: #0060d0; /* כחול כהה יותר בהובר */
+            box-shadow: 0 6px 12px rgba(0, 122, 255, 0.2);
+        }
+
+        /* סגנון עיגול נתונים - מותאם לסקיצה */
+        .data-circle {
+            width: 120px; /* קטן יותר */
+            height: 120px; /* קטן יותר */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: #FFFFFF;
+            border: 1px solid #E0E0E0; /* גבול עדין מאוד */
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s; /* פחות אנימציה */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* צללית עדינה מאוד */
+        }
+        .data-circle:hover {
+            border-color: #007AFF; /* גבול כחול בהובר */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+        }
+        .data-circle .text-xl {
+            font-size: 1rem; /* כותרת קטנה יותר */
+            color: #6B7280; /* אפור לטקסט עליון */
+        }
+        .data-circle .text-4xl {
+            font-size: 2.25rem; /* גודל פחות ענק */
+            line-height: 1.2;
+        }
+
+        /* סגנון כרטיס קומפוננטה (רכבים) - מותאם למראה טבלה/נקי */
+        .component-card {
+            background-color: #FFFFFF;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid #E0E0E0;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.2s;
+        }
+        .component-card:hover {
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
+        }
+        .component-card .index-number {
+            font-size: 1.8rem; /* אינדקס גדול יותר */
+            color: #6B7280; /* אפור לאינדקס */
+            border-left: none; /* הסרת הגבול */
+            padding-left: 0;
+            margin-left: 0;
+            margin-right: 1.5rem; /* רווח מימין */
+        }
+        .component-card .component-title {
+            font-size: 1.25rem; /* כותרת פחות ענקית */
+            color: #374151; /* אפור כהה */
+        }
+        .component-card .component-description {
+            color: #6B7280; /* אפור לתיאור */
+        }
+        .component-card .component-img-container {
+            width: 90px; /* תמונה קטנה יותר */
+            height: 90px; /* תמונה קטנה יותר */
+        }
+
+        /* סגנון טקסט ניתן לעריכה - עדין יותר */
+        [contenteditable="true"]:not(textarea) {
+            outline: none;
+            border-bottom: 1px solid transparent;
+            transition: border-bottom-color 0.2s, background-color 0.2s;
+            padding-bottom: 2px;
+        }
+        [contenteditable="true"]:not(textarea):focus {
+            border-bottom-color: #007AFF;
+            background-color: #F8F9FA; /* רקע עדין בעת עריכה */
+        }
+
+        /* סגנון TextArea לתובנות - עדין יותר */
+        textarea {
+            resize: vertical; /* רק גלילה אנכית */
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #D1D5DB; /* גבול עדין יותר */
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            color: #374151;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #007AFF;
+            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.15); /* צללית כחולה עדינה */
+        }
+
+        /* סגנון כרטיס גרפיקה - עדין וקטן יותר */
+        .graphic-card {
+            background-color: #FFFFFF;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid #E0E0E0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+        .graphic-card .graphic-img-container {
+            height: 100px; /* תמונה קטנה יותר */
+        }
+        .graphic-card .graphic-title {
+            font-size: 0.875rem; /* כותרת קטנה יותר */
+            color: #374151;
+            margin-top: 0.5rem;
+        }
+
+        /* כפתור "שמור" והעלאה */
+        .action-button {
+            background-color: #E5E7EB; /* אפור בהיר כברירת מחדל */
+            color: #4B5563; /* טקסט אפור כהה */
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .action-button:hover {
+            background-color: #D1D5DB;
+        }
+        .action-button.primary {
+            background-color: #007AFF;
+            color: white;
+        }
+        .action-button.primary:hover {
+            background-color: #0060d0;
+        }
+        .action-button.saved {
+            background-color: #10B981;
+            color: white;
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <!-- תוכן ראשי ניתן לעריכה --><main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16 relative z-10">
+
+        <!-- ****************************************************** --><!-- חלוקה ראשית לקומפוננטות ניתנות לשכפול ועריכה --><!-- ****************************************************** --><!-- חלק 1: פתיחה ומידע כללי - מותאם לסקיצה עם איור והבלטה --><section class="mb-12">
+            <!-- לוגו וכותרת ראשית (כמו ב-PDF) --><div class="flex items-center space-x-3 space-x-reverse mb-6 justify-center">
+                <img id="header-logo" src="https://placehold.co/40x40/007AFF/FFFFFF?text=L" alt="לוגו l00K" class="rounded-lg w-10 h-10 object-cover">
+                <h1 class="text-3xl font-black text-lok-dark-gray">
+                    <span class="text-lok-primary">l00K</span>
+                    <span class="text-xl font-light"> | מסמך פיילוט</span>
+                </h1>
+            </div>
+            
+            <!-- מלבן טקסט ניתן לעריכה עם איור (כמו בדוגמה) --><div class="p-6 bg-lok-blue-light rounded-xl border border-lok-primary/20 shadow-lg flex items-start space-x-4 space-x-reverse relative overflow-hidden">
+                <!-- Illustration Placeholder - ממוקם משמאל לטקסט --><img id="intro-illustration" src="https://placehold.co/120x80/EBF5FF/007AFF?text=איור" alt="איור פתיחה" class="w-32 h-24 flex-shrink-0 object-contain ml-4 rounded-lg">
+                <div class="flex flex-col flex-grow">
+                    <p contenteditable="true" class="text-xl text-gray-700 text-right font-medium pr-4 pt-1">
+                        "מטרת הפיילוט לבדוק אינטראקציה מהשטח, לזהות חסמים עיקריים ולקבוע את יעילות המערכת בהעברת מידע קריטי."
+                    </p>
+                    <div class="flex justify-start mt-4 mr-4">
+                        <button onclick="document.getElementById('intro-illustration-upload').click()" class="action-button bg-gray-200 text-lok-dark-gray hover:bg-gray-300">
+                            עדכן איור
+                        </button>
+                        <input type="file" id="intro-illustration-upload" accept="image/png, image/svg+xml" class="hidden" onchange="uploadIntroIllustration(event)">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+        <!-- ****************************************************** --><!-- חלק 2: כפתור "+" שמוסיף קופסת רכב / עסק / גרפיקה --><!-- ****************************************************** --><section class="mb-16">
+            <h2 class="text-2xl font-bold text-lok-dark-gray mb-6 border-r-4 border-lok-primary pr-3">רכבים משתתפים</h2>
+            <div id="component-cards-container" class="space-y-4">
+                
+                <!-- כרטיס קומפוננטה ראשוני (מותאם למבנה הסקיצה) --><div class="component-card flex items-center" data-component-id="1">
+                    
+                    <!-- 1. אינדקס --><div class="flex-shrink-0 text-2xl font-light text-lok-dark-gray mr-4">
+                        01
+                    </div>
+
+                    <!-- 2. אזור טקסט ועריכה - Content Area --><div class="flex-grow text-right space-y-1 p-2">
+                        <h3 contenteditable="true" class="text-lg font-bold text-lok-dark-gray component-title">סוזוקי קרוסאובר (2020)</h3>
+                        <p contenteditable="true" class="text-gray-600 text-xs component-description">ממוצע שימוש יומי: 45.3 ק"מ | ציון יעילות: 87/100 | טקסט עריכה נוסף.</p>
+                        
+                        <!-- כפתור שמירה ועריכת תמונה --><div class="flex justify-start space-x-2 space-x-reverse pt-2">
+                            <button onclick="saveComponent(this.closest('.component-card'))" class="action-button primary">
+                                שמור
+                            </button>
+                            <button onclick="document.getElementById('upload-1').click()" class="action-button">
+                                העלה תמונה
+                            </button>
+                            <input type="file" id="upload-1" accept="image/png" class="hidden" onchange="uploadComponentImage(event, '1')">
+                             <button onclick="promptForImageUrl('1')" class="action-button">
+                                קישור לתמונה
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 3. אזור תמונה - Far Right (מותאם לסקיצה) --><div class="w-24 h-24 flex-shrink-0 relative overflow-hidden rounded-lg ml-4 shadow-md component-img-container">
+                        <img class="w-full h-full object-cover component-img" src="https://placehold.co/96x96/D1D5DB/6B7280?text=רכב" alt="תמונת קומפוננטה">
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- כפתור הוספת קומפוננטה --><div class="flex justify-end mt-6">
+                <button onclick="addComponentCard()" class="add-button bg-lok-primary text-white">
+                    +
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ****************************************************** --><!-- חלק 3: נתונים מספריים (עיגולים) - מותאם לעיצוב הרך --><!-- ****************************************************** --><section class="mb-16">
+            <h2 class="text-2xl font-bold text-lok-dark-gray mb-6 border-r-4 border-lok-primary pr-3">מדדי פיילוט ליבה</h2>
+            
+            <div id="data-circles-container" class="flex flex-wrap justify-center sm:justify-between gap-4">
+                <!-- עיגול 1 --><div class="data-circle" onclick="makeEditable(this)">
+                    <p class="text-xl text-gray-500">אדום (HR)</p>
+                    <div contenteditable="true" class="text-4xl font-black text-lok-hr editable-text" data-original-text="8/25">8/25</div>
+                </div>
+
+                <!-- עיגול 2 --><div class="data-circle" onclick="makeEditable(this)">
+                    <p class="text-xl text-gray-500">כחול (Infra)</p>
+                    <div contenteditable="true" class="text-4xl font-black text-lok-infra editable-text" data-original-text="12/25">12/25</div>
+                </div>
+
+                <!-- עיגול 3 --><div class="data-circle" onclick="makeEditable(this)">
+                    <p class="text-xl text-gray-500">ירוק (Accent)</p>
+                    <div contenteditable="true" class="text-4xl font-black text-lok-accent editable-text" data-original-text="5/25">5/25</div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ****************************************************** --><!-- חלק 4: גרפיקות פר עסק (גלריה) - מותאם למבנה הגלריה --><!-- ****************************************************** --><section class="mb-16">
+            <h2 class="text-2xl font-bold text-lok-dark-gray mb-6 border-r-4 border-lok-primary pr-3">גרפיקות ומגמות</h2>
+            
+            <div id="graphics-gallery-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                
+                <!-- גרפיקה ראשונית (ניתנת לשכפול) --><div class="graphic-card flex flex-col" data-graphic-id="1">
+                    <div class="w-full graphic-img-container bg-lok-soft-gray mb-2 flex items-center justify-center rounded-lg overflow-hidden relative">
+                        <img class="w-full h-full object-contain graphic-img" src="https://placehold.co/120x100/F9FAFB/9CA3AF?text=גרפיקה" alt="תמונת גרפיקה">
+                        <button onclick="document.getElementById('graphic-upload-1').click()" class="absolute inset-0 bg-lok-primary/50 text-white opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg text-sm font-bold">החלף</button>
+                        <input type="file" id="graphic-upload-1" accept="image/png, image/svg+xml" class="hidden" onchange="uploadGraphicImage(event, '1')">
+                    </div>
+                    <h4 contenteditable="true" class="text-center text-xs font-medium text-lok-dark-gray graphic-title">כותרת גרפיקה 1</h4>
+                </div>
+
+                <!-- גרפיקה שנייה לדוגמה --><div class="graphic-card flex flex-col" data-graphic-id="2">
+                    <div class="w-full graphic-img-container bg-lok-soft-gray mb-2 flex items-center justify-center rounded-lg overflow-hidden relative">
+                        <img class="w-full h-full object-contain graphic-img" src="https://placehold.co/120x100/F9FAFB/9CA3AF?text=גרפיקה" alt="תמונת גרפיקה">
+                        <button onclick="document.getElementById('graphic-upload-2').click()" class="absolute inset-0 bg-lok-primary/50 text-white opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg text-sm font-bold">החלף</button>
+                        <input type="file" id="graphic-upload-2" accept="image/png, image/svg+xml" class="hidden" onchange="uploadGraphicImage(event, '2')">
+                    </div>
+                    <h4 contenteditable="true" class="text-center text-xs font-medium text-lok-dark-gray graphic-title">כותרת גרפיקה 2</h4>
+                </div>
+            </div>
+            
+            <!-- כפתור הוספת גרפיקה --><div class="flex justify-center mt-6">
+                <button onclick="addGraphicCard()" class="add-button bg-lok-accent text-white">
+                    +
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ****************************************************** --><!-- חלק 5: תובנות / נתונים טקסטואליים --><!-- ****************************************************** --><section class="mb-16">
+            <h2 class="text-2xl font-bold text-lok-dark-gray mb-6 border-r-4 border-lok-primary pr-3">תובנות ומסקנות</h2>
+
+            <div id="insights-container" class="space-y-6">
+
+                <!-- קומפוננטת סעיף טקסט ראשי (ניתן לשכפול) --><div class="insight-block bg-white p-4 rounded-xl border border-lok-border-light shadow-sm" data-insight-id="1">
+                    <h3 contenteditable="true" class="text-xl font-bold text-lok-dark-gray mb-3 text-right insight-title">1. הצלחות עיקריות</h3>
+                    <div class="space-y-3 insight-items-container">
+                        
+                        <!-- תיבת טקסט ניתנת לעריכה ראשונית --><textarea rows="3" class="w-full text-gray-700 insight-textarea" placeholder="הקלד כאן את התובנה או המסקנה...">הכניסה הראשונית של המשתמשים למערכת הייתה חלקה ומעידה על ממשק משתמש אינטואיטיבי. נרשמו 80% פחות קריאות תמיכה מהצפוי.</textarea>
+                    </div>
+
+                    <!-- כפתור הוספת פריט טקסט --><div class="flex justify-end mt-4">
+                        <button onclick="addInsightItem(this.closest('.insight-block').querySelector('.insight-items-container'))" class="add-button bg-lok-primary/70 text-white w-8 h-8 text-xl">
+                            +
+                        </button>
+                    </div>
+                </div>
+
+
+                <!-- קומפוננטת סעיף טקסט נוסף --><div class="insight-block bg-white p-4 rounded-xl border border-lok-border-light shadow-sm" data-insight-id="2">
+                    <h3 contenteditable="true" class="text-xl font-bold text-lok-dark-gray mb-3 text-right insight-title">2. נקודות לשיפור</h3>
+                    <div class="space-y-3 insight-items-container">
+                        <textarea rows="3" class="w-full text-gray-700 insight-textarea" placeholder="הקלד כאן את התובנה או המסקנה...">נמצא קושי קל בסינון נתונים מתקדמים באזור "תשתיות ותפעול". יש לשפר את ה-UX של פילטרים מרובים.</textarea>
+                    </div>
+                    <div class="flex justify-end mt-4">
+                        <button onclick="addInsightItem(this.closest('.insight-block').querySelector('.insight-items-container'))" class="add-button bg-lok-primary/70 text-white w-8 h-8 text-xl">
+                            +
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- כפתור הוספת בלוק תובנות ראשי --><div class="flex justify-start mt-10">
+                <button onclick="addInsightBlock()" class="add-button bg-lok-infra text-white py-2 px-4 rounded-full w-auto h-auto text-base">
+                    + הוסף סעיף חדש
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- פוטר נקי --><footer class="text-center py-6 relative z-10 border-t border-lok-border-light mt-16 bg-white">
+        <p class="mt-4 text-gray-500 text-sm">מערכת l00K. עורך פיילוט חי. </p>
+    </footer>
+
+    <!-- ****************************************************** --><!-- JavaScript לניהול העריכה והשכפול --><!-- ****************************************************** --><script>
+        let componentCounter = 1; 
+        let graphicCounter = 2; 
+        let insightCounter = 2; 
+
+        function makeEditable(element) {
+            const editableDiv = element.querySelector('.editable-text');
+            if (editableDiv) {
+                editableDiv.setAttribute('contenteditable', 'true');
+                editableDiv.focus();
+                
+                editableDiv.addEventListener('blur', () => {
+                    editableDiv.setAttribute('contenteditable', 'false');
+                }, { once: true });
+            }
+        }
+        
+        // ********** חלק 1: לוגו ואיור פתיחה **********
+        function uploadHeaderLogo(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('header-logo').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function uploadIntroIllustration(event) {
+            const file = event.target.files[0];
+            if (file && (file.type.startsWith('image/png') || file.type.startsWith('image/svg+xml'))) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('intro-illustration').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+
+        // ********** חלק 2: כרטיסיות קומפוננטה (רכבים) **********
+        function createComponentCard(id) {
+            componentCounter++; // נגדיל את המונה לפני השימוש בו כדי שהאינדקסים יהיו 01, 02 וכו'
+            const indexDisplay = id < 10 ? '0' + id : id;
+            return `
+                <div class="component-card flex items-center" data-component-id="${id}">
+                    
+                    <!-- 1. אינדקס --><div class="flex-shrink-0 text-2xl font-light text-lok-dark-gray mr-4 index-number">
+                        ${indexDisplay}
+                    </div>
+
+                    <!-- 2. אזור טקסט ועריכה - Content Area --><div class="flex-grow text-right space-y-1 p-2">
+                        <h3 contenteditable="true" class="text-lg font-bold text-lok-dark-gray component-title">כותרת קומפוננטה חדשה</h3>
+                        <p contenteditable="true" class="text-gray-600 text-xs component-description">תיאור העסק, הנתונים או הממצאים הרלוונטיים החדשים.</p>
+                        
+                        <!-- כפתור שמירה ועריכת תמונה --><div class="flex justify-start space-x-2 space-x-reverse pt-2">
+                            <button onclick="saveComponent(this.closest('.component-card'))" class="action-button primary">
+                                שמור
+                            </button>
+                            <button onclick="document.getElementById('upload-${id}').click()" class="action-button">
+                                העלה תמונה
+                            </button>
+                            <input type="file" id="upload-${id}" accept="image/png" class="hidden" onchange="uploadComponentImage(event, '${id}')">
+                            <button onclick="promptForImageUrl('${id}')" class="action-button">
+                                קישור לתמונה
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 3. אזור תמונה - Far Right --><div class="w-24 h-24 flex-shrink-0 relative overflow-hidden rounded-lg ml-4 shadow-md component-img-container">
+                        <img class="w-full h-full object-cover component-img" src="https://placehold.co/96x96/D1D5DB/6B7280?text=רכב" alt="תמונת קומפוננטה">
+                    </div>
+                </div>
+            `;
+        }
+
+        function addComponentCard() {
+            const container = document.getElementById('component-cards-container');
+            container.insertAdjacentHTML('beforeend', createComponentCard(componentCounter));
+        }
+
+        function uploadComponentImage(event, id) {
+            const file = event.target.files[0];
+            const card = document.querySelector(`.component-card[data-component-id="${id}"]`);
+            if (file && file.type.startsWith('image/') && card) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    card.querySelector('.component-img').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function promptForImageUrl(id) {
+            const imageUrl = prompt("הכנס קישור לתמונה (URL):");
+            if (imageUrl) {
+                const card = document.querySelector(`.component-card[data-component-id="${id}"]`);
+                if (card) {
+                    card.querySelector('.component-img').src = imageUrl;
+                }
+            }
+        }
+
+        function saveComponent(cardElement) {
+            const saveButton = cardElement.querySelector('.action-button.primary');
+            saveButton.textContent = 'נשמר!';
+            saveButton.classList.remove('primary');
+            saveButton.classList.add('saved');
+
+            setTimeout(() => {
+                saveButton.textContent = 'שמור';
+                saveButton.classList.remove('saved');
+                saveButton.classList.add('primary');
+            }, 1500);
+        }
+
+
+        // ********** חלק 4: גרפיקות גלריה **********
+        function createGraphicCard(id) {
+            graphicCounter++; // נגדיל את המונה
+            return `
+                <div class="graphic-card flex flex-col" data-graphic-id="${id}">
+                    <div class="w-full graphic-img-container bg-lok-soft-gray mb-2 flex items-center justify-center rounded-lg overflow-hidden relative">
+                        <img class="w-full h-full object-contain graphic-img" src="https://placehold.co/120x100/F9FAFB/9CA3AF?text=גרפיקה" alt="תמונת גרפיקה">
+                        <button onclick="document.getElementById('graphic-upload-${id}').click()" class="absolute inset-0 bg-lok-primary/50 text-white opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg text-sm font-bold">החלף</button>
+                        <input type="file" id="graphic-upload-${id}" accept="image/png, image/svg+xml" class="hidden" onchange="uploadGraphicImage(event, '${id}')">
+                    </div>
+                    <h4 contenteditable="true" class="text-center text-xs font-medium text-lok-dark-gray graphic-title">כותרת גרפיקה ${id}</h4>
+                </div>
+            `;
+        }
+        
+        function addGraphicCard() {
+            const container = document.getElementById('graphics-gallery-container');
+            container.insertAdjacentHTML('beforeend', createGraphicCard(graphicCounter));
+        }
+
+        function uploadGraphicImage(event, id) {
+            const file = event.target.files[0];
+            const card = document.querySelector(`.graphic-card[data-graphic-id="${id}"]`);
+            if (file && (file.type.startsWith('image/png') || file.type.startsWith('image/svg+xml')) && card) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    card.querySelector('.graphic-img').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+
+        // ********** חלק 5: תובנות וסעיפים טקסטואליים **********
+        function createInsightItem() {
+            const newTextArea = document.createElement('textarea');
+            newTextArea.rows = 3;
+            newTextArea.classList.add('w-full', 'text-gray-700', 'insight-textarea');
+            newTextArea.placeholder = 'הקלד כאן את התובנה או המסקנה החדשה...';
+            return newTextArea;
+        }
+
+        function addInsightItem(container) {
+            container.appendChild(createInsightItem());
+        }
+
+        function createInsightBlock(id) {
+            insightCounter++; // נגדיל את המונה
+            return `
+                <div class="insight-block bg-white p-4 rounded-xl border border-lok-border-light shadow-sm" data-insight-id="${id}">
+                    <h3 contenteditable="true" class="text-xl font-bold text-lok-dark-gray mb-3 text-right insight-title">${id}. כותרת סעיף חדשה</h3>
+                    <div class="space-y-3 insight-items-container">
+                        ${createInsightItem().outerHTML}
+                    </div>
+                    <div class="flex justify-end mt-4">
+                        <button onclick="addInsightItem(this.closest('.insight-block').querySelector('.insight-items-container'))" class="add-button bg-lok-primary/70 text-white w-8 h-8 text-xl">
+                            +
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function addInsightBlock() {
+            const container = document.getElementById('insights-container');
+            container.insertAdjacentHTML('beforeend', createInsightBlock(insightCounter));
+        }
+    </script>
+</body>
+</html>

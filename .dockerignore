@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+*.db
+.DS_Store
+.git
+.gitignore
+venv/
+.venv/
+chroma_db/
+node_modules/
