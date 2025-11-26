@@ -16,12 +16,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENV CHROMA_PERSIST_DIR=/data/chroma_db \
+ENV CHROMA_PERSIST_DIR=/app/chroma_db \
     PORT=8000
 
 # Create chroma data dir
-RUN mkdir -p /data/chroma_db
-VOLUME ["/data/chroma_db"]
+RUN mkdir -p /app/chroma_db
+VOLUME ["/app/chroma_db"]
 
 EXPOSE 8000
 
