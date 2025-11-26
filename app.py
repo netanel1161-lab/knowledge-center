@@ -29,6 +29,7 @@ from flask_wtf import CSRFProtect
 from flask_wtf.csrf import generate_csrf
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from pymongo import MongoClient
+from pymongo.server_api import ServerApi
 from bson.json_util import dumps
 
 from chroma_repository import ChromaRepository
@@ -70,7 +71,7 @@ login_manager.login_view = "login"
 # -------------------------------------------------
 # Database & Models
 # -------------------------------------------------
-mongo_client = MongoClient(settings.mongo_uri, serverSelectionTimeoutMS=4000)
+mongo_client = MongoClient(settings.mongo_uri, server_api=ServerApi("1"), serverSelectionTimeoutMS=4000)
 mongo_db = mongo_client[settings.mongo_db_name]
 knowledge_items_collection = mongo_db.knowledge_items
 users_collection = mongo_db.users

@@ -1,14 +1,13 @@
-import os
 from functools import lru_cache
 from typing import List, Optional
 
-from pydantic_settings import BaseSettings
 from pydantic import Field
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     mongo_uri: str = Field(..., env="MONGO_URI")
-    mongo_db_name: str = Field("knowledge_db", env="MONGO_DB_NAME")
+    mongo_db_name: str = Field("netanel1161_db_user", env="MONGO_DB_NAME")
     chroma_persist_dir: str = Field("./chroma_db", env="CHROMA_PERSIST_DIR")
 
     flask_env: str = Field("production", env="FLASK_ENV")
