@@ -2,7 +2,7 @@ Flask
 Flask-Bcrypt
 bleach
 Flask-Talisman
-pymongo[srv]==4.10.1
+pymongo[srv]==4.15.4
 chromadb
 sentence-transformers
 beautifulsoup4
