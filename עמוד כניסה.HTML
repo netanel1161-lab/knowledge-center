@@ -202,11 +202,21 @@
                 כניסה
             </button>
         </form>
+
+        <div class="mt-6 space-y-3">
+            <button id="google-btn" class="w-full flex items-center justify-center space-x-2 space-x-reverse py-3 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-semibold transition" onclick="window.location.href='/auth/google/login'">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" class="w-5 h-5">
+                <span>המשך עם Google</span>
+            </button>
+            <button id="signup-btn" class="w-full py-3 rounded-xl text-lok-primary border border-lok-primary font-bold hover:bg-lok-primary hover:text-white transition" onclick="showSignupInfo()">
+                הרשמה
+            </button>
+        </div>
     </div>
 
     <script>
         // -- הגדרות קבועות --
-        const CORRECT_PIN = '7458';
+        const CORRECT_PIN = '1234';
         const MAX_ATTEMPTS = 8;
         const LOCKOUT_DURATION_MS = 24 * 60 * 60 * 1000; // 24 שעות
 
@@ -257,6 +267,11 @@
             pinInputs[0].disabled = false;
             pinInputs[0].focus();
             loginBtn.disabled = true;
+        }
+
+        // כפתור הרשמה זמני
+        function showSignupInfo() {
+            alert('הרשמה תתווסף. בינתיים אפשר להיכנס עם קוד 1234 או דרך Google.');
         }
 
         /**
@@ -378,12 +393,10 @@
                 loginBtn.disabled = true;
                 loginBtn.textContent = 'מתחבר...';
                 
-                // הדמיית מעבר לעמוד הבא
+                // מעבר לעמוד תפריט ראשי
                 setTimeout(() => {
-                    // כאן תהיה הפנייה לעמוד הראשי (או לאפליקציה ב-React/Angular)
-                    // לצורך ההדגמה, נציג הודעה
-                    loginCard.innerHTML = '<div class="p-12 text-center"><h2 class="text-3xl font-bold text-lok-success mb-4">כניסה מוצלחת!</h2><p class="text-gray-600">אתה יכול כעת להשתמש במערכת.</p></div>';
-                }, 1500);
+                    window.location.href = '/menu';
+                }, 800);
 
             } else {
                 // קוד שגוי

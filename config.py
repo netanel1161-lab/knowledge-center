@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import List, Optional
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -18,6 +18,24 @@ class Settings(BaseSettings):
     admin_default_user: Optional[str] = Field(None, env="ADMIN_DEFAULT_USER")
     admin_default_password: Optional[str] = Field(None, env="ADMIN_DEFAULT_PASSWORD")
     admin_default_role: str = Field("admin", env="ADMIN_DEFAULT_ROLE")
+
+    # OAuth / email settings
+    google_client_id: Optional[str] = Field(None, env="GOOGLE_CLIENT_ID")
+    google_client_secret: Optional[str] = Field(None, env="GOOGLE_CLIENT_SECRET")
+    oauth_redirect_uri: Optional[str] = Field(None, env="OAUTH_REDIRECT_URI")
+
+    smtp_host: Optional[str] = Field(None, env="SMTP_HOST")
+    smtp_port: Optional[int] = Field(None, env="SMTP_PORT")
+    smtp_username: Optional[str] = Field(None, env="SMTP_USERNAME")
+    smtp_password: Optional[str] = Field(None, env="SMTP_PASSWORD")
+    smtp_use_tls: bool = Field(True, env="SMTP_USE_TLS")
+    email_from: Optional[str] = Field(None, env="EMAIL_FROM")
+
+    @field_validator("smtp_port", mode="before")
+    def empty_port_as_none(cls, v):
+        if v in ("", None):
+            return None
+        return v
 
     class Config:
         env_file = ".env"

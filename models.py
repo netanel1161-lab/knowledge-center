@@ -79,12 +79,27 @@ class UserModel:
     def __init__(self, mongo_collection):
         self.collection = mongo_collection
 
-    def create_user(self, username: str, password: str, role: str = "viewer") -> Optional[dict]:
+    def create_user(self, username: str, password: str, role: str = "viewer", email: Optional[str] = None, email_verified: bool = False) -> Optional[dict]:
         if self.collection.find_one({"username": username}):
             return None
         user_doc = {
             "username": username,
             "password_hash": generate_password_hash(password),
+            "role": role,
+            "email": email,
+            "email_verified": email_verified,
+            "created_at": datetime.utcnow(),
+        }
+        result = self.collection.insert_one(user_doc)
+        user_doc["_id"] = result.inserted_id
+        return user_doc
+
+    def create_user_from_google(self, google_id: str, email: str, name: Optional[str] = None, role: str = "viewer") -> dict:
+        user_doc = {
+            "username": name or email,
+            "google_id": google_id,
+            "email": email,
+            "email_verified": True,
             "role": role,
             "created_at": datetime.utcnow(),
         }
@@ -94,6 +109,37 @@ class UserModel:
 
     def get_user_by_username(self, username: str) -> Optional[dict]:
         return self.collection.find_one({"username": username})
+
+    def get_user_by_email(self, email: str) -> Optional[dict]:
+        return self.collection.find_one({"email": email})
+
+    def get_user_by_google_id(self, google_id: str) -> Optional[dict]:
+        return self.collection.find_one({"google_id": google_id})
+
+    def attach_google_id(self, user_id, google_id: str):
+        return self.collection.update_one({"_id": user_id}, {"$set": {"google_id": google_id, "email_verified": True}})
+
+    def set_email_verification_token(self, user_id, token: str):
+        self.collection.update_one(
+            {"_id": user_id},
+            {
+                "$set": {
+                    "email_verification_token": token,
+                    "email_verified": False,
+                    "email_verification_created_at": datetime.utcnow(),
+                }
+            },
+        )
+
+    def verify_email_token(self, token: str) -> bool:
+        doc = self.collection.find_one({"email_verification_token": token})
+        if not doc:
+            return False
+        self.collection.update_one(
+            {"_id": doc["_id"]},
+            {"$set": {"email_verified": True}, "$unset": {"email_verification_token": "", "email_verification_created_at": ""}},
+        )
+        return True
 
     def verify_user(self, username: str, password: str) -> Optional[dict]:
         user = self.get_user_by_username(username)

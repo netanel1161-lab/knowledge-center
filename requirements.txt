@@ -11,3 +11,4 @@ pydantic
 python-dotenv
 gunicorn
 pydantic-settings
+Authlib

@@ -1,6 +1,9 @@
 import logging
 import os
 import uuid
+import secrets
+import smtplib
+from email.message import EmailMessage
 from functools import wraps
 from typing import Optional
 
@@ -31,6 +34,7 @@ from pydantic import BaseModel, Field, ValidationError, model_validator
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from bson.json_util import dumps
+from authlib.integrations.flask_client import OAuth
 
 from chroma_repository import ChromaRepository
 from config import get_settings
@@ -98,8 +102,21 @@ if settings.admin_default_user and settings.admin_default_password:
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 VIEWS_DIR = os.path.join(BASE_DIR, "views")
+MENU_FILE = "תפריט ראשי2.HTML"
+LOGIN_LANDING_FILE = "עמוד כניסה.HTML"
 
 chroma_repo = ChromaRepository(persist_directory=settings.chroma_persist_dir)
+
+# OAuth setup (Google)
+oauth = OAuth(app)
+if settings.google_client_id and settings.google_client_secret:
+    oauth.register(
+        name="google",
+        client_id=settings.google_client_id,
+        client_secret=settings.google_client_secret,
+        server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+        client_kwargs={"scope": "openid email profile"},
+    )
 
 # -------------------------------------------------
 # Auth / Roles
@@ -329,8 +346,11 @@ def login():
     user_doc = user_model.verify_user(username, password)
     if not user_doc:
         return jsonify({"error": "Invalid credentials"}), 401
+    if user_doc.get("email") and not user_doc.get("email_verified", False):
+        return jsonify({"error": "Email not verified"}), 403
     login_user(User(user_doc))
-    return jsonify({"message": "Logged in", "role": user_doc.get("role", "viewer")})
+    redirect_to = request.args.get("next") or url_for("menu_page")
+    return jsonify({"message": "Logged in", "role": user_doc.get("role", "viewer"), "next": redirect_to})
 
 
 @app.route("/logout", methods=["POST"])
@@ -342,6 +362,87 @@ def logout():
     return jsonify({"message": "Logged out"})
 
 
+def send_verification_email(to_email: str, token: str):
+    if not (settings.smtp_host and settings.smtp_port and settings.smtp_username and settings.smtp_password and settings.email_from):
+        logger.warning("SMTP not configured; verification token for %s: %s", to_email, token)
+        return
+    msg = EmailMessage()
+    msg["Subject"] = "Verify your account"
+    msg["From"] = settings.email_from
+    msg["To"] = to_email
+    verify_link = url_for("verify_email", token=token, _external=True)
+    msg.set_content(f"Click to verify your account: {verify_link}")
+    with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
+        if settings.smtp_use_tls:
+            server.starttls()
+        server.login(settings.smtp_username, settings.smtp_password)
+        server.send_message(msg)
+
+
+@app.route("/signup", methods=["POST"])
+@csrf.exempt
+@limiter.limit("20 per minute")
+def signup():
+    payload = request.get_json() or {}
+    email = (payload.get("email") or "").strip().lower()
+    username = (payload.get("username") or "").strip()
+    password = (payload.get("password") or "").strip()
+    if not email or not username or not password:
+        return jsonify({"error": "Missing email, username or password"}), 400
+    existing_email = user_model.get_user_by_email(email)
+    if existing_email:
+        return jsonify({"error": "Email already registered"}), 409
+    created = user_model.create_user(username=username, password=password, role="viewer", email=email)
+    if not created:
+        return jsonify({"error": "Username already exists"}), 409
+    token = secrets.token_urlsafe(32)
+    user_model.set_email_verification_token(created["_id"], token)
+    send_verification_email(email, token)
+    return jsonify({"message": "Signup successful. Check email to verify your account."}), 201
+
+
+@app.route("/verify-email", methods=["GET"])
+def verify_email():
+    token = request.args.get("token")
+    if not token:
+        return jsonify({"error": "Missing token"}), 400
+    ok = user_model.verify_email_token(token)
+    if not ok:
+        return jsonify({"error": "Invalid or expired token"}), 400
+    return jsonify({"message": "Email verified"}), 200
+
+
+@app.route("/auth/google/login")
+def google_login():
+    if "google" not in oauth._registry:
+        return jsonify({"error": "Google OAuth not configured"}), 501
+    redirect_uri = settings.oauth_redirect_uri or url_for("google_callback", _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
+
+
+@app.route("/auth/google/callback")
+def google_callback():
+    if "google" not in oauth._registry:
+        return jsonify({"error": "Google OAuth not configured"}), 501
+    token = oauth.google.authorize_access_token()
+    user_info = oauth.google.parse_id_token(token)
+    if not user_info:
+        return jsonify({"error": "Failed to fetch Google user info"}), 400
+    google_id = user_info.get("sub")
+    email = (user_info.get("email") or "").lower()
+    name = user_info.get("name") or email
+    user_doc = user_model.get_user_by_google_id(google_id)
+    if not user_doc:
+        existing_email = user_model.get_user_by_email(email)
+        if existing_email:
+            user_model.attach_google_id(existing_email["_id"], google_id)
+            user_doc = user_model.get_user_by_google_id(google_id)
+        else:
+            user_doc = user_model.create_user_from_google(google_id=google_id, email=email, name=name)
+    login_user(User(user_doc))
+    return redirect(url_for("menu_page"))
+
+
 # -------------------------------------------------
 # Static/Admin Routes
 # -------------------------------------------------
@@ -349,6 +450,9 @@ def logout():
 
 @app.route("/")
 def index():
+    landing_path = os.path.join(BASE_DIR, LOGIN_LANDING_FILE)
+    if os.path.exists(landing_path):
+        return send_from_directory(BASE_DIR, LOGIN_LANDING_FILE)
     if os.path.exists(os.path.join(BASE_DIR, "QE.html")):
         return send_from_directory(BASE_DIR, "QE.html")
     if os.path.exists(os.path.join(VIEWS_DIR, "QE.html")):
@@ -394,6 +498,14 @@ def admin_list_items():
 @limiter.limit("60 per minute")
 def admin_knowledge():
     return send_from_directory(VIEWS_DIR, "admin_knowledge.html")
+
+
+@app.route("/menu")
+def menu_page():
+    menu_path = os.path.join(BASE_DIR, MENU_FILE)
+    if os.path.exists(menu_path):
+        return send_from_directory(BASE_DIR, MENU_FILE)
+    return "Menu page not found", 404
 
 
 @app.route("/<path:filename>")
