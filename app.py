@@ -34,12 +34,15 @@ from pydantic import BaseModel, Field, ValidationError, model_validator
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from bson.json_util import dumps
+import bleach
+from flask_bcrypt import Bcrypt
+from flask_talisman import Talisman
 from authlib.integrations.flask_client import OAuth
+from werkzeug.security import generate_password_hash
 
 from chroma_repository import ChromaRepository
 from config import get_settings
 from models import KnowledgeItemModel, UserModel
-from werkzeug.security import generate_password_hash
 from utils import extract_text_from_html
 
 # -------------------------------------------------
@@ -57,11 +60,21 @@ app = Flask(__name__, static_folder=".", static_url_path="/")
 app.secret_key = settings.session_secret_key
 app.config.update(
     SESSION_COOKIE_SECURE=settings.flask_env != "development",
+    SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
 )
 
 CORS(app, origins=settings.allowed_origins, supports_credentials=True)
 csrf = CSRFProtect(app)
+bcrypt = Bcrypt(app)
+talisman = Talisman(
+    app,
+    content_security_policy={
+        "default-src": "'self'",
+        "script-src": ["'self'", "https://cdn.tailwindcss.com"],
+    },
+    force_https=False,
+)
 limiter = Limiter(
     get_remote_address,
     app=app,
@@ -81,12 +94,12 @@ knowledge_items_collection = mongo_db.knowledge_items
 users_collection = mongo_db.users
 
 knowledge_item_model = KnowledgeItemModel(knowledge_items_collection)
-user_model = UserModel(users_collection)
+user_model = UserModel(users_collection, bcrypt)
 
 # Bootstrap / upsert default admin if configured
 if settings.admin_default_user and settings.admin_default_password:
     admin_username = settings.admin_default_user
-    password_hash = generate_password_hash(settings.admin_default_password)
+    password_hash = bcrypt.generate_password_hash(settings.admin_default_password).decode("utf-8")
     users_collection.update_one(
         {"username": admin_username},
         {
@@ -138,6 +151,9 @@ def load_user(user_id: str) -> Optional[User]:
 
 @login_manager.unauthorized_handler
 def unauthorized():
+    logger.warning(
+        "Unauthorized access attempt to %s from IP %s", request.path, get_remote_address()
+    )
     if request.path.startswith("/api"):
         return jsonify({"error": "Unauthorized"}), 401
     return redirect(url_for("login"))
@@ -148,8 +164,21 @@ def role_required(*roles):
         @wraps(fn)
         def wrapper(*args, **kwargs):
             if not current_user.is_authenticated:
+                logger.warning(
+                    "Unauthenticated access attempt to %s from IP %s",
+                    request.path,
+                    get_remote_address(),
+                )
                 return redirect(url_for("login"))
             if current_user.role not in roles:
+                logger.warning(
+                    "User '%s' with role '%s' attempted to access protected route %s requiring roles %s from IP %s",
+                    current_user.username,
+                    current_user.role,
+                    request.path,
+                    roles,
+                    get_remote_address(),
+                )
                 return jsonify({"error": "Forbidden"}), 403
             return fn(*args, **kwargs)
 
@@ -342,13 +371,34 @@ def login():
     username = request.form.get("username", "").strip()
     password = request.form.get("password", "").strip()
     if not username or not password:
+        logger.warning("Failed login attempt: missing credentials from IP %s", get_remote_address())
         return jsonify({"error": "Missing credentials"}), 400
+
+    user = user_model.get_user_by_username(username)
+    if not user:
+        logger.warning("Failed login attempt for non-existent user '%s' from IP %s", username, get_remote_address())
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    if user_model.is_locked(user["_id"]):
+        logger.warning("Locked account login attempt for user '%s' from IP %s", username, get_remote_address())
+        return jsonify({"error": "Account locked due to too many failed login attempts."}), 429
+
     user_doc = user_model.verify_user(username, password)
     if not user_doc:
+        # After a failed attempt, user_model.verify_user has already called record_failed_login
+        user = user_model.get_user_by_username(username) # Re-fetch user to get updated attempt count
+        if user and user.get("failed_login_attempts", 0) >= 5:
+            user_model.lock_user(user["_id"])
+            logger.warning("User account '%s' locked due to 5 failed login attempts from IP %s", username, get_remote_address())
+        
+        logger.warning("Invalid login attempt for user '%s' from IP %s", username, get_remote_address())
         return jsonify({"error": "Invalid credentials"}), 401
+
     if user_doc.get("email") and not user_doc.get("email_verified", False):
         return jsonify({"error": "Email not verified"}), 403
+
     login_user(User(user_doc))
+    logger.info("Successful login for user '%s' from IP %s", username, get_remote_address())
     redirect_to = request.args.get("next") or url_for("menu_page")
     return jsonify({"message": "Logged in", "role": user_doc.get("role", "viewer"), "next": redirect_to})
 
@@ -358,6 +408,9 @@ def login():
 @login_required
 @csrf.exempt
 def logout():
+    logger.info(
+        "User '%s' logged out from IP %s", current_user.username, get_remote_address()
+    )
     logout_user()
     return jsonify({"message": "Logged out"})
 
@@ -395,6 +448,14 @@ def signup():
     created = user_model.create_user(username=username, password=password, role="viewer", email=email)
     if not created:
         return jsonify({"error": "Username already exists"}), 409
+    
+    logger.info(
+        "New user signed up: username='%s', email='%s' from IP %s",
+        username,
+        email,
+        get_remote_address(),
+    )
+    
     token = secrets.token_urlsafe(32)
     user_model.set_email_verification_token(created["_id"], token)
     send_verification_email(email, token)
@@ -529,6 +590,10 @@ def serve_static(filename):
 @limiter.limit("30 per minute")
 def create_knowledge_item():
     payload = request.get_json() or {}
+    # Sanitize input to prevent XSS
+    payload["title"] = bleach.clean(payload.get("title", ""))
+    payload["content"] = bleach.clean(payload.get("content", ""))
+
     data = KnowledgeItemPayload(**payload)
     plain_text_content = (
         extract_text_from_html(data.content) if "<" in data.content and ">" in data.content else data.content
@@ -609,6 +674,12 @@ def update_knowledge_item(item_id):
         raise APIError("Invalid item ID format", 400)
 
     payload = request.get_json() or {}
+    # Sanitize input to prevent XSS
+    if "title" in payload:
+        payload["title"] = bleach.clean(payload["title"])
+    if "content" in payload:
+        payload["content"] = bleach.clean(payload["content"])
+        
     data = KnowledgeItemUpdate(**payload)
     original_item = knowledge_item_model.get_item_by_id(item_id)
     if not original_item:
@@ -664,13 +735,13 @@ def delete_knowledge_item(item_id):
     if not deleted:
         raise APIError("Failed to delete knowledge item", 500)
 
+    logger.info(
+        "User '%s' deleted knowledge item with ID '%s' from IP %s",
+        current_user.username,
+        item_id,
+        get_remote_address(),
+    )
     return jsonify({"message": "Knowledge item deleted successfully"}), 200
-
-
-@app.route("/debug/admin_users", methods=["GET"])
-def debug_admin_users():
-    users = list(users_collection.find({}, {"_id": 0, "username": 1, "role": 1}))
-    return jsonify(users)
 
 
 if __name__ == "__main__":

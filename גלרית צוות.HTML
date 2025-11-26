@@ -216,103 +216,25 @@
     <!-- תוכן ראשי -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16">
 
-        <!-- כותרת ראשית של הדף -->
         <div class="text-center my-8">
             <h1 class="text-4xl lg:text-5xl font-extrabold text-lok-dark-gray leading-tight mb-3">
                 הרגעים שלנו
             </h1>
             <p class="text-gray-600 text-lg max-w-2xl mx-auto">
-                תיעוד רגעים, פגישות, אירועי חברה וכל מה שקורה מאחורי הקלעים של l00K.
+                כל התמונות והוידאו מהתיקיות המקומיות, בגלריה אחת נוחה.
             </p>
         </div>
 
-        <!-- מקטע חודש: אוקטובר 2025 -->
+        <!-- גלריית תמונות -->
         <section class="mb-16">
-            <h2 class="text-3xl font-bold text-lok-dark-gray mb-6 border-r-4 border-lok-primary pr-3">אוקטובר 2025</h2>
-            
-            <!-- רשת תמונות ווידאו -->
-            <!-- aspect-ratio-video (16:9), aspect-ratio-square (1:1), aspect-ratio-portrait (במובייל) -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                
-                <!-- פריט 1: תמונה רגילה (16:9) -->
-                <div class="gallery-card rounded-xl aspect-[16/9]" 
-                     data-type="image" 
-                     data-src="https://placehold.co/800x450/007AFF/FFFFFF?text=Company+Meeting">
-                    <img src="https://placehold.co/800x450/007AFF/FFFFFF?text=Company+Meeting" alt="פגישת חברה אוקטובר 2025" class="rounded-xl">
-                </div>
-
-                <!-- פריט 2: תמונה ריבועית (1:1) -->
-                <div class="gallery-card rounded-xl aspect-square" 
-                     data-type="image" 
-                     data-src="https://placehold.co/600x600/1F2937/FFFFFF?text=Team+Lunch">
-                    <img src="https://placehold.co/600x600/1F2937/FFFFFF?text=Team+Lunch" alt="ארוחת צהריים צוותית" class="rounded-xl">
-                </div>
-
-                <!-- פריט 3: וידאו (16:9) -->
-                <div class="gallery-card rounded-xl aspect-[16/9]" 
-                     data-type="video" 
-                     data-src="https://www.w3schools.com/html/mov_bbb.mp4"> <!-- מקור וידאו זמני אמיתי -->
-                    
-                    <!-- תמונת נושא (Poster) לווידאו -->
-                    <img src="https://placehold.co/800x450/10B981/FFFFFF?text=Event+Highlight+(Video)" alt="סיכום אירוע חברה" class="rounded-xl">
-                    
-                    <!-- אייקון Play -->
-                    <div class="video-overlay">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
-                    </div>
-                </div>
-
-                <!-- פריט 4: תמונה אנכית (תופס 2 שורות) -->
-                <div class="gallery-card rounded-xl aspect-[9/16] sm:aspect-[9/16] col-span-1 row-span-2" 
-                     data-type="image" 
-                     data-src="https://placehold.co/450x800/EBF5FF/1F2937?text=Office+View">
-                    <img src="https://placehold.co/450x800/EBF5FF/1F2937?text=Office+View" alt="נוף מהמשרד" class="rounded-xl">
-                </div>
-                
-                <!-- פריט 5: תמונה רגילה (16:9) -->
-                <div class="gallery-card rounded-xl aspect-[16/9]" 
-                     data-type="image" 
-                     data-src="https://placehold.co/800x450/F59E0B/FFFFFF?text=Workshop">
-                    <img src="https://placehold.co/800x450/F59E0B/FFFFFF?text=Workshop" alt="סדנה מקצועית" class="rounded-xl">
-                </div>
-
-                <!-- פריט 6: תמונה רגילה (16:9) -->
-                <div class="gallery-card rounded-xl aspect-[16/9]" 
-                     data-type="image" 
-                     data-src="https://placehold.co/800x450/EF4444/FFFFFF?text=Happy+Hour">
-                    <img src="https://placehold.co/800x450/EF4444/FFFFFF?text=Happy+Hour" alt="האפי האוור" class="rounded-xl">
-                </div>
-            </div>
+            <h2 class="text-3xl font-bold text-lok-dark-gray mb-6 border-r-4 border-lok-primary pr-3">תמונות</h2>
+            <div id="photo-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
         </section>
 
-
-        <!-- מקטע חודש: ספטמבר 2025 -->
+        <!-- גלריית וידאו -->
         <section class="mb-16">
-            <h2 class="text-3xl font-bold text-lok-dark-gray mb-6 border-r-4 border-lok-primary pr-3">ספטמבר 2025</h2>
-            
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                
-                <!-- פריט 1: תמונה ריבועית -->
-                <div class="gallery-card rounded-xl aspect-square" 
-                     data-type="image" 
-                     data-src="https://placehold.co/600x600/007AFF/FFFFFF?text=Team+Photo">
-                    <img src="https://placehold.co/600x600/007AFF/FFFFFF?text=Team+Photo" alt="תמונת צוות" class="rounded-xl">
-                </div>
-
-                <!-- פריט 2: תמונה רגילה -->
-                <div class="gallery-card rounded-xl aspect-[16/9]" 
-                     data-type="image" 
-                     data-src="https://placehold.co/800x450/1F2937/FFFFFF?text=Brainstorming">
-                    <img src="https://placehold.co/800x450/1F2937/FFFFFF?text=Brainstorming" alt="פגישת סיעור מוחות" class="rounded-xl">
-                </div>
-
-                <!-- פריט 3: תמונה רגילה -->
-                <div class="gallery-card rounded-xl aspect-[16/9]" 
-                     data-type="image" 
-                     data-src="https://placehold.co/800x450/EBF5FF/1F2937?text=Work+Setup">
-                    <img src="https://placehold.co/800x450/EBF5FF/1F2937?text=Work+Setup" alt="עמדת עבודה" class="rounded-xl">
-                </div>
-            </div>
+            <h2 class="text-3xl font-bold text-lok-dark-gray mb-6 border-r-4 border-lok-primary pr-3">וידאו</h2>
+            <div id="video-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </section>
 
     </main>
@@ -361,12 +283,100 @@
             lightboxContent.innerHTML = ''; 
         }
 
-        // הוספת Event Listeners לכל הכרטיסים
+        // נתונים: תמונות מהתיקייה assets/icons/poto
+        const photoFiles = [
+            "assets/icons/poto/00000006-PHOTO-2025-11-11-00-58-10.jpg",
+            "assets/icons/poto/00000007-PHOTO-2025-11-11-00-58-10.jpg",
+            "assets/icons/poto/00000008-PHOTO-2025-11-11-00-58-11.jpg",
+            "assets/icons/poto/00000011-PHOTO-2025-11-11-00-58-12.jpg",
+            "assets/icons/poto/00000012-PHOTO-2025-11-11-00-58-13.jpg",
+            "assets/icons/poto/00000013-PHOTO-2025-11-11-00-58-14.jpg",
+            "assets/icons/poto/00000015-PHOTO-2025-11-11-00-58-14.jpg",
+            "assets/icons/poto/00000016-PHOTO-2025-11-11-00-58-15.jpg",
+            "assets/icons/poto/00000018-PHOTO-2025-11-11-00-58-16.jpg",
+            "assets/icons/poto/00000020-PHOTO-2025-11-11-00-58-17.jpg",
+            "assets/icons/poto/00000021-PHOTO-2025-11-11-00-58-18.jpg",
+            "assets/icons/poto/00000023-PHOTO-2025-11-11-00-58-19.jpg",
+            "assets/icons/poto/00000024-PHOTO-2025-11-11-00-58-19.jpg",
+            "assets/icons/poto/00000025-PHOTO-2025-11-11-00-58-20.jpg",
+            "assets/icons/poto/00000026-PHOTO-2025-11-11-00-58-20.jpg",
+            "assets/icons/poto/00000027-PHOTO-2025-11-11-00-58-20.jpg",
+            "assets/icons/poto/00000028-PHOTO-2025-11-11-00-58-21.jpg",
+            "assets/icons/poto/00000030-PHOTO-2025-11-11-00-58-21.jpg",
+            "assets/icons/poto/00000031-PHOTO-2025-11-11-00-58-22.jpg",
+            "assets/icons/poto/00000032-PHOTO-2025-11-11-00-58-22.jpg",
+            "assets/icons/poto/00000033-PHOTO-2025-11-11-00-58-23.jpg",
+            "assets/icons/poto/00000034-PHOTO-2025-11-11-00-58-24.jpg",
+            "assets/icons/poto/00000035-PHOTO-2025-11-11-00-58-24.jpg",
+            "assets/icons/poto/00000036-PHOTO-2025-11-11-00-58-25.jpg",
+            "assets/icons/poto/00000037-PHOTO-2025-11-11-00-58-26.jpg",
+            "assets/icons/poto/00000038-PHOTO-2025-11-11-00-58-27.jpg",
+            "assets/icons/poto/00000039-PHOTO-2025-11-11-00-58-28.jpg",
+            "assets/icons/poto/00000040-PHOTO-2025-11-11-00-58-29.jpg",
+            "assets/icons/poto/00000041-PHOTO-2025-11-11-00-58-29.jpg",
+            "assets/icons/poto/00000042-PHOTO-2025-11-11-00-58-30.jpg",
+            "assets/icons/poto/00000043-PHOTO-2025-11-11-00-58-30.jpg",
+            "assets/icons/poto/00000044-PHOTO-2025-11-11-00-58-30.jpg",
+            "assets/icons/poto/00000045-PHOTO-2025-11-11-00-58-31.jpg",
+            "assets/icons/poto/00000046-PHOTO-2025-11-11-00-58-31.jpg",
+            "assets/icons/poto/00000047-PHOTO-2025-11-11-00-58-32.jpg",
+            "assets/icons/poto/00000048-PHOTO-2025-11-11-00-58-33.jpg",
+            "assets/icons/poto/00000049-PHOTO-2025-11-11-00-58-34.jpg",
+            "assets/icons/poto/00000050-PHOTO-2025-11-11-00-58-35.jpg",
+            "assets/icons/poto/00000051-PHOTO-2025-11-11-00-58-35.jpg",
+            "assets/icons/poto/00000052-PHOTO-2025-11-11-00-58-35.jpg",
+            "assets/icons/poto/00000053-PHOTO-2025-11-11-00-58-35.jpg"
+        ];
+
+        // נתונים: וידאו מהתיקייה assets/icons/video
+        const videoFiles = [
+            "assets/icons/video/00000003-VIDEO-2025-11-11-00-58-08.mp4",
+            "assets/icons/video/00000004-VIDEO-2025-11-11-00-58-09.mp4",
+            "assets/icons/video/00000005-VIDEO-2025-11-11-00-58-09.mp4",
+            "assets/icons/video/00000009-VIDEO-2025-11-11-00-58-12.mp4",
+            "assets/icons/video/00000010-VIDEO-2025-11-11-00-58-12.mp4",
+            "assets/icons/video/00000014-VIDEO-2025-11-11-00-58-14.mp4",
+            "assets/icons/video/00000017-VIDEO-2025-11-11-00-58-15.mp4",
+            "assets/icons/video/00000019-VIDEO-2025-11-11-00-58-17.mp4",
+            "assets/icons/video/00000022-VIDEO-2025-11-11-00-58-19.mp4",
+            "assets/icons/video/00000029-VIDEO-2025-11-11-00-58-21.mp4"
+        ];
+
+        function createImageCard(src) {
+            const card = document.createElement('div');
+            card.className = 'gallery-card rounded-xl aspect-[16/9]';
+            card.dataset.type = 'image';
+            card.dataset.src = src;
+            card.innerHTML = `<img src="${src}" alt="תמונת צוות" class="rounded-xl">`;
+            card.addEventListener('click', () => openLightbox(card));
+            return card;
+        }
+
+        function createVideoCard(src) {
+            const card = document.createElement('div');
+            card.className = 'gallery-card rounded-xl aspect-[16/9] overflow-hidden';
+            card.dataset.type = 'video';
+            card.dataset.src = src;
+            card.innerHTML = `
+                <video src="${src}" class="rounded-xl" muted preload="metadata"></video>
+                <div class="video-overlay">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                </div>`;
+            card.addEventListener('click', () => openLightbox(card));
+            return card;
+        }
+
+        // בניית הגלריות בפועל (Lazy עד לרגע הטעינה)
         document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.gallery-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    openLightbox(card);
-                });
+            const photoGrid = document.getElementById('photo-grid');
+            const videoGrid = document.getElementById('video-grid');
+
+            photoFiles.forEach(src => {
+                photoGrid.appendChild(createImageCard(src));
+            });
+
+            videoFiles.forEach(src => {
+                videoGrid.appendChild(createVideoCard(src));
             });
         });
 
